@@ -3,7 +3,9 @@ import {
   forgotPasswordController,
   loginUserController,
   logoutUserController,
+  refreshToken,
   registerUserController,
+  resetPasswordController,
   updateUserDetails,
   uploadAvatar,
   verifyOtpController,
@@ -22,5 +24,7 @@ userRouter.put("/upload-avatar", auth, upload.single("avatar"), uploadAvatar);
 userRouter.put("/update-user", auth, updateUserDetails);
 userRouter.put("/forgot-password", forgotPasswordController);
 userRouter.put("/verify-forgot-otp-password", verifyOtpController);
+userRouter.put("/reset-password", resetPasswordController);
+userRouter.post("/refresh-token", refreshToken)
 
 export default userRouter;

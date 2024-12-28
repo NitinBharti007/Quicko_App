@@ -7,6 +7,7 @@ import generateRefreshToken from "../utils/generateRefreshToken.js";
 import uploadImageCloudinary from "../utils/uploadImageCloudinary.js";
 import generateOtp from "../utils/generateOtp.js";
 import verifyOtpTemplate from "../utils/verifyOtpTemplate.js";
+import jwt from "jsonwebtoken";
 
 //Register User Controller
 export async function registerUserController(req, res) {
@@ -357,12 +358,20 @@ export async function verifyOtpController(req, res) {
 export async function resetPasswordController(req, res) {
   try {
     const { new_password, confirm_password, email } = req.body;
-    const user = await UserModel.findOne({ email });
     if (!email || !new_password || !confirm_password) {
       return res.status(400).json({
         message: "Email, new password and confirm password are required",
         error: true,
         success: false,
+      });
+    }
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(400).json({
+        message: "User not found",
+        error: true,
+        success: false,
+        F,
       });
     }
     if (new_password !== confirm_password) {
@@ -372,8 +381,72 @@ export async function resetPasswordController(req, res) {
         success: false,
       });
     }
+
+    const salt = await bcryptjs.genSalt(10);
+    const hashedPassword = await bcryptjs.hash(new_password, salt);
+
+    const update = await UserModel.findByIdAndUpdate(user._id, {
+      password: hashedPassword,
+    });
+
+    return res.json({
+      message: "Password reset successfully",
+      error: false,
+      success: true,
+    });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(500).json({
+      message: error.message || error,
+      error: true,
+      success: false,
+    });
+  }
+}
+
+// Refresh Token API
+export async function refreshToken(req, res) {
+  try {
+    const refreshToken =
+      req.cookies.refreshToken || req?.headers?.authorization?.split(" ")[1];
+    if (!refreshToken) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        error: true,
+        success: false,
+      });
+    }
+    const verifyToken = await jwt.verify(
+      refreshToken,
+      process.env.SECRET_KEY_REFRESH_TOKEN
+    );
+    if (!verifyToken) {
+      return res.status(401).json({
+        message: "Token is expired",
+        error: true,
+        success: false,
+      });
+    }
+    const userId = verifyToken?._id;
+    const newAccessToken = await generateAccessToken(userId);
+
+    const cookieOption = {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    };
+
+    res.cookie("accessToken", newAccessToken, cookieOption);
+
+    return res.json({
+      message: "New refresh token generated successfully",
+      error: false,
+      success: true,
+      data: {
+        accessToken: newAccessToken,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
       message: error.message || error,
       error: true,
       success: false,
