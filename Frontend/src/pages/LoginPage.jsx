@@ -99,7 +99,7 @@ const Login = () => {
           <div>
             <button
               type="submit"
-              className={` ${ValidColor ? "bg-green-800" : "bg-gray-600"} w-full  text-white tracking-wide py-2 rounded font-medium transition`}
+              className={` ${ValidColor ? "bg-green-800 hover:bg-green-700" : "bg-gray-600"} w-full  text-white tracking-wide py-2 rounded font-medium transition`}
             >
               Login
             </button>

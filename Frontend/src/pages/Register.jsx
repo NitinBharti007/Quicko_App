@@ -1,9 +1,14 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LuEyeClosed } from "react-icons/lu";
 import { AiOutlineEye } from "react-icons/ai";
+import { toast } from "react-hot-toast";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
+import AxiosToastError from "../utils/AxiosToastError";
 
 const Register = () => {
+  const navigate = useNavigate();
   const [data, setData] = useState({
     name: "",
     email: "",
@@ -22,21 +27,66 @@ const Register = () => {
 
   const validate = () => {
     const newErrors = {};
-    if (!data.name) newErrors.name = "Name is required";
-    if (!data.email) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(data.email))
+    if (!data.name) {
+      toast.error("Name is required");
+      newErrors.name = "Name is required";
+    }
+    if (!data.email) {
+      toast.error("Email is required");
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(data.email)) {
+      toast.error("Enter a valid email");
       newErrors.email = "Enter a valid email";
-    if (!data.password) newErrors.password = "Password is required";
-    else if (data.password.length < 6)
+    }
+    if (!data.password) {
+      toast.error("Password is required");
+      newErrors.password = "Password is required";
+    } else if (data.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
       newErrors.password = "Password must be at least 6 characters";
-    if (data.password !== data.confirmPassword)
+    }
+    if (data.password !== data.confirmPassword) {
+      toast.error("Passwords do not match");
       newErrors.confirmPassword = "Passwords do not match";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const ValidColor = Object.values(data).every((el) => el);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validate()) {
+      return;
+    }
+    try {
+      const response = await Axios({
+        ...SummaryApi.register,
+        data: data,
+      });
+
+      if (response.data.error) {
+        toast.error(response.data.message || "Registration failed");
+        return;
+      }
+
+      if (response.data.success) {
+        toast.success(response.data.message || "Registration successful");
+        setData({
+          name: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        });
+        navigate("/login");
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred");
+      AxiosToastError(error);
+    }
+  };
 
   return (
     <section className="container mx-auto w-full">
@@ -45,7 +95,7 @@ const Register = () => {
           Welcome to Quicko!
         </h2>
         <p className="text-center text-gray-600">Create your account</p>
-        <form className="grid gap-4 mt-6">
+        <form onSubmit={handleSubmit} className="grid gap-4 mt-6">
           <div className="grid gap-1">
             <label htmlFor="name" className="font-medium">
               Name:
@@ -160,7 +210,9 @@ const Register = () => {
           <div>
             <button
               type="submit"
-              className={` ${ValidColor ? "bg-green-800" : "bg-gray-800"} w-full text-white tracking-wide py-2 rounded font-medium transition`}
+              className={`${
+                ValidColor ? "bg-green-800 hover:bg-green-700" : "bg-gray-800"
+              } w-full text-white tracking-wide py-2 rounded font-medium transition`}
             >
               Register
             </button>
