@@ -1,13 +1,16 @@
 import React from "react";
 import logo from "../assets/logo.jpg";
+import Search from "./Search";
+import { Link } from "react-router-dom";
+import { FaRegCircleUser } from "react-icons/fa6";
 
 const Header = () => {
   return (
-    <header className="h-20 shadow-md sticky top-0">
-      <div className="container mx-auto flex items-center h-full px-4 justify-between">
+    <header className="h-28 lg:h-20 lg:shadow-md sticky top-0 flex flex-col justify-center gap-1">
+      <div className="container mx-auto flex items-center px-2 justify-between">
         {/*  Logo  */}
         <div className="h-full">
-          <div className="h-full flex items-center justify-center">
+          <Link to={"/"} className="h-full flex items-center justify-center">
             <img
               src={logo}
               width={180}
@@ -22,14 +25,26 @@ const Header = () => {
               alt="logo"
               className="lg:hidden"
             />
-          </div>
+          </Link>
         </div>
 
         {/* Search */}
-        <div>Search</div>
+        <div className="hidden lg:block">
+          <Search />
+        </div>
 
         {/* Login and Cart */}
-        <div>Login and cart</div>
+        <div>
+          <button>
+            <FaRegCircleUser size={29} className="lg:hidden mt-3" />
+          </button>
+          <div className="hidden lg:block">
+            Login and cart
+          </div>
+        </div>
+      </div>
+      <div className="container lg:hidden mx-auto px-2">
+        <Search />
       </div>
     </header>
   );
