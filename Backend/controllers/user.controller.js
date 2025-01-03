@@ -53,7 +53,7 @@ export async function registerUserController(req, res) {
     });
 
     return res.json({
-      message: "Register Success",
+      message: "User registered successfully",
       error: false,
       success: true,
       data: save,
