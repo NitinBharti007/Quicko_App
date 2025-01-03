@@ -5,7 +5,7 @@ import { AiOutlineEye } from "react-icons/ai";
 import { toast } from "react-hot-toast";
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
-import AxiosToastError from "../utils/AxiosToastError";
+// import AxiosToastError from "../utils/AxiosToastError";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -87,7 +87,6 @@ const Register = () => {
       AxiosToastError(error);
     }
   };
-
   return (
     <section className="container mx-auto w-full">
       <div className="bg-white my-4 w-full max-w-lg mx-auto rounded p-6 shadow-lg">
