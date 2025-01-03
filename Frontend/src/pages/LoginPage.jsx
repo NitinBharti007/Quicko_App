@@ -1,7 +1,11 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LuEyeClosed } from "react-icons/lu";
 import { AiOutlineEye } from "react-icons/ai";
+import toast from "react-hot-toast";
+import AxiosToastError from "../utils/AxiosToastError";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
 
 const Login = () => {
   const [data, setData] = useState({
@@ -10,27 +14,30 @@ const Login = () => {
   });
 
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setData({ ...data, [name]: value });
   };
 
-  const validate = () => {
-    const newErrors = {};
-    if (!data.name) newErrors.name = "Name is required";
-    if (!data.email) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(data.email))
-      newErrors.email = "Enter a valid email";
-    if (!data.password) newErrors.password = "Password is required";
-    else if (data.password.length < 6)
-      newErrors.password = "Password must be at least 6 characters";
-    if (data.password !== data.confirmPassword)
-      newErrors.confirmPassword = "Passwords do not match";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await Axios({
+        ...SummaryApi.login,
+        data: data,
+      });
+      if (response.data.error) {
+        toast.error(response.data.message);
+      }
+      if (response.data.success) {
+        toast.success(response.data.message);
+        navigate("/");
+      }
+    } catch (error) {
+      AxiosToastError(error);
+    }
   };
 
   const ValidColor = Object.values(data).every((el) => el);
@@ -41,7 +48,7 @@ const Login = () => {
           Welcome to Quicko!
         </h2>
         <p className="text-center text-gray-600">Log into your account</p>
-        <form className="grid gap-4 mt-6">
+        <form onSubmit={handleSubmit} className="grid gap-4 mt-6">
           <div className="grid gap-1">
             <label htmlFor="email" className="font-medium">
               Email:
@@ -50,26 +57,17 @@ const Login = () => {
               type="email"
               id="email"
               name="email"
-              className={`bg-blue-50 p-2 border rounded focus:outline-primary-100 ${
-                errors.email ? "border-red-500" : "border-gray-300"
-              }`}
+              className="bg-blue-50 p-2 border rounded focus:outline-primary-100"
               value={data.email}
               onChange={handleChange}
               placeholder="Enter your email"
             />
-            {errors.email && (
-              <span className="text-sm text-red-500">{errors.email}</span>
-            )}
           </div>
           <div className="grid gap-1">
             <label htmlFor="password" className="font-medium">
               Password:
             </label>
-            <div
-              className={`bg-blue-50 p-2 border rounded flex items-center focus-within:outline focus-within:outline-primary-100 ${
-                errors.password ? "border-red-500" : "border-gray-300"
-              }`}
-            >
+            <div className="bg-blue-50 p-2 border rounded flex items-center focus-within:outline focus-within:outline-primary-100">
               <input
                 type={showPassword ? "text" : "password"}
                 id="password"
@@ -92,14 +90,13 @@ const Login = () => {
                 )}
               </button>
             </div>
-            {errors.password && (
-              <span className="text-sm text-red-500">{errors.password}</span>
-            )}
           </div>
           <div>
             <button
               type="submit"
-              className={` ${ValidColor ? "bg-green-800 hover:bg-green-700" : "bg-gray-600"} w-full  text-white tracking-wide py-2 rounded font-medium transition`}
+              className={` ${
+                ValidColor ? "bg-green-800 hover:bg-green-700" : "bg-gray-600"
+              } w-full  text-white tracking-wide py-2 rounded font-medium transition`}
             >
               Login
             </button>
