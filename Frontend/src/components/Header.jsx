@@ -49,7 +49,7 @@ const Header = () => {
           <div className="">
             {/* User Icon display only in Mobile Screen  */}
             <button>
-              <FaRegCircleUser size={29} className="lg:hidden mt-3" />
+              <FaRegCircleUser size={29} className="lg:hidden mt-2" />
             </button>
             {/* Desktop  */}
             <div className="hidden lg:flex mb-6 items-center gap-10">
