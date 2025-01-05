@@ -37,8 +37,6 @@ const ResetPassword = () => {
   };
 
   const ValidColor = Object.values(data).every((el) => el);
-  console.log(location);
-  console.log("resetdata", data);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
