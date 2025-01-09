@@ -33,6 +33,12 @@ const UserMenu = ({ close }) => {
       AxiosToastError(error);
     }
   };
+
+  const handleClose = () => {
+    if (close) {
+      close();
+    }
+  };
   return (
     <div>
       <div className="font-semibold">My Account</div>
@@ -40,16 +46,58 @@ const UserMenu = ({ close }) => {
         <span className="max-w-52 text-ellipsis line-clamp-1">
           {user.name || user.mobile || "Guest"}
         </span>
-        <Link to={"/dashboard/profile"} className=" hover:text-primary-200 ">
+        <Link
+          onClick={handleClose}
+          to={"/dashboard/profile"}
+          className=" hover:text-primary-200 "
+        >
           <FaExternalLinkAlt size={12} />
         </Link>
       </div>
       <Divider />
       <div className="text-sm grid gap-1">
-        <Link to={"/dashboard/orders"} className="px-2 hover:bg-orange-200 py-1">
+
+      <Link
+          onClick={handleClose}
+          to={"/dashboard/category"}
+          className="px-2 hover:bg-orange-200 py-1"
+        >
+          Category
+        </Link>
+        <Link
+          onClick={handleClose}
+          to={"/dashboard/sub-category"}
+          className="px-2 hover:bg-orange-200 py-1"
+        >
+          Sub Category
+        </Link>
+        <Link
+          onClick={handleClose}
+          to={"/dashboard/upload-products"}
+          className="px-2 hover:bg-orange-200 py-1"
+        >
+         Upload Products
+        </Link>
+        <Link
+          onClick={handleClose}
+          to={"/dashboard/products"}
+          className="px-2 hover:bg-orange-200 py-1"
+        >
+          Products
+        </Link>
+
+        <Link
+          onClick={handleClose}
+          to={"/dashboard/orders"}
+          className="px-2 hover:bg-orange-200 py-1"
+        >
           My Orders
         </Link>
-        <Link to={"/dashboard/address"} className="px-2 hover:bg-orange-200 py-1">
+        <Link
+          onClick={handleClose}
+          to={"/dashboard/address"}
+          className="px-2 hover:bg-orange-200 py-1"
+        >
           Save Address
         </Link>
         <button

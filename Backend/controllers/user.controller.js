@@ -214,6 +214,8 @@ export async function uploadAvatar(req, res) {
 
     return res.json({
       message: "Avatar uploaded successfully",
+      error: false,
+      success: true,
       data: {
         _id: userId,
         avatar: upload.url,
