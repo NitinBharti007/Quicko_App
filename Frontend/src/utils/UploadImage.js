@@ -9,11 +9,7 @@ const UploadImage = async (image) => {
       ...SummaryApi.uploadImage,
       data: formData,
     });
-    return res.json({
-      message: "Image Uplaod Succesfully",
-      error: false,
-      success: true,
-    });
+    return res;
   } catch (error) {
     return error;
   }

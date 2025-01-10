@@ -7,7 +7,7 @@ const Dashboard = () => {
     <section className="bg-white">
       <div className="container mx-auto p-6 grid lg:grid-cols-[250px,1fr]">
         {/* Left for menu  */}
-        <div className="px-5 sticky top-28 overflow-y-auto hidden lg:block border-r">
+        <div className="px-5 sticky top-28 overflow-y-auto hidden max-h-[calc(100vh-130px)] lg:block border-r">
             <UserMenu/>
         </div>
 
