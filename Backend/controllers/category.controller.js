@@ -36,3 +36,20 @@ export const AddCategoryController = async (req, res) => {
     });
   }
 };
+
+export const GetCategoryController = async (req, res) => {
+  try {
+    const data = await CategoryModel.find();
+    return res.json({
+      data: data,
+      error: false,
+      success: true,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || error,
+      error: true,
+      success: false,
+    });
+  }
+};
