@@ -6,13 +6,15 @@ import SummaryApi from "../common/SummaryApi.js";
 import AxiosToastError from "../utils/AxiosToastError.js";
 import toast from "react-hot-toast";
 
-const UploadCategoryModel = ({ close, fetchData }) => {
+const EditCategory = ({ close, fetchData, data: categoryData }) => {
   const [data, setData] = useState({
-    name: "",
-    image: "",
+    _id: categoryData._id,
+    name: categoryData.name,
+    image: categoryData.image,
   });
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setData((prev) => {
@@ -22,13 +24,12 @@ const UploadCategoryModel = ({ close, fetchData }) => {
       };
     });
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setAdding(true);
       const res = await Axios({
-        ...SummaryApi.addCategory,
+        ...SummaryApi.updateCategory,
         data: data,
       });
       const { data: resData } = res;
@@ -52,20 +53,20 @@ const UploadCategoryModel = ({ close, fetchData }) => {
     setLoading(true);
     const res = await UploadImage(file);
     const { data: ImageResponse } = res;
+    setLoading(false)
     setData((prev) => {
       return {
         ...prev,
         image: ImageResponse.data.url,
       };
     });
-    setLoading(false);
   };
 
   return (
     <section className="fixed top-0 bottom-0 left-0 right-0 p-4 bg-neutral-900 bg-opacity-75 flex justify-center items-center">
       <div className="bg-white max-w-4xl w-full h-auto p-4 rounded">
         <div className="flex items-center justify-between">
-          <h1 className="font-semibold">Category</h1>
+          <h1 className="font-semibold">Edit Category</h1>
           <button
             onClick={close}
             className="w-fit block ml-auto hover:text-primary-200"
@@ -134,7 +135,7 @@ const UploadCategoryModel = ({ close, fetchData }) => {
                 : "bg-gray-300"
             } text-neutral-800 font-semibold px-3 py-2 rounded`}
           >
-            {adding ? "Adding..." : "Add Category"}
+            {adding ? "Updating..." : "Update Category"}
           </button>
         </form>
       </div>
@@ -142,4 +143,4 @@ const UploadCategoryModel = ({ close, fetchData }) => {
   );
 };
 
-export default UploadCategoryModel;
+export default EditCategory;
