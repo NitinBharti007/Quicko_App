@@ -53,3 +53,30 @@ export const GetCategoryController = async (req, res) => {
     });
   }
 };
+
+export const UpdateCategoryController = async (req, res) => {
+  try {
+    const { _id, name, image } = req.body;
+    const updateCategory = await CategoryModel.updateOne(
+      {
+        _id: _id,
+      },
+      {
+        name,
+        image,
+      }
+    );
+    return res.json({
+      message: "Updated Category",
+      data: updateCategory,
+      error: false,
+      success: true,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || error,
+      error: true,
+      success: false,
+    });
+  }
+};
