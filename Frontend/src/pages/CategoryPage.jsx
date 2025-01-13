@@ -11,7 +11,6 @@ const CategoryPage = () => {
   const [loading, setLoading] = useState(false);
   const [categoryData, setCategoryData] = useState([]);
   const [openEdit, setOpenEdit] = useState(false);
-
   const [editData, setEditData] = useState({
     name: "",
     image: "",
@@ -28,7 +27,6 @@ const CategoryPage = () => {
         setCategoryData(resData.data);
       }
     } catch (error) {
-      return error;
     } finally {
       setLoading(false);
     }
@@ -89,7 +87,7 @@ const CategoryPage = () => {
         <EditCategory
           data={editData}
           close={() => setOpenEdit(false)}
-          etchData={fetchCategory}
+          fetchData={fetchCategory}
         />
       )}
     </section>

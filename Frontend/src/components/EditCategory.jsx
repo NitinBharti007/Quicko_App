@@ -66,7 +66,7 @@ const EditCategory = ({ close, fetchData, data: categoryData }) => {
     <section className="fixed top-0 bottom-0 left-0 right-0 p-4 bg-neutral-900 bg-opacity-75 flex justify-center items-center">
       <div className="bg-white max-w-4xl w-full h-auto p-4 rounded">
         <div className="flex items-center justify-between">
-          <h1 className="font-semibold">Edit Category</h1>
+          <h1 className="font-semibold">Update Category</h1>
           <button
             onClick={close}
             className="w-fit block ml-auto hover:text-primary-200"
@@ -99,16 +99,15 @@ const EditCategory = ({ close, fetchData, data: categoryData }) => {
                 {data.image ? (
                   <img
                     src={data.image}
-                    alt="image"
+                    alt="category"
                     className="w-full h-full object-scale-down"
                   />
                 ) : (
                   <p className="text-sm text-neutral-500">No Image</p>
                 )}
               </div>
-              <label htmlFor="uploadImage">
+              <label htmlFor="uploadCategoryImage">
                 <div
-                  type="submit"
                   className={`${
                     !data.name
                       ? "bg-gray-300"
@@ -121,14 +120,13 @@ const EditCategory = ({ close, fetchData, data: categoryData }) => {
                   disabled={!data.name}
                   onChange={handleUploadCategoryImage}
                   type="file"
-                  id="uploadImage"
+                  id="uploadCategoryImage"
                   className="hidden"
                 />
               </label>
             </div>
           </div>
           <button
-            type="submit"
             className={`${
               data.name && data.image
                 ? "bg-primary-200  hover:bg-primary-100"
