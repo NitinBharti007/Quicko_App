@@ -5,12 +5,19 @@ import Nodata from "../components/Nodata";
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import EditCategory from "../components/EditCategory";
+import ConfirmBox from "../components/ConfirmBox";
+import toast from "react-hot-toast";
+import AxiosToastError from "../utils/AxiosToastError";
 
 const CategoryPage = () => {
   const [modelOpen, setModelOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [categoryData, setCategoryData] = useState([]);
   const [openEdit, setOpenEdit] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [deleteCategory, setDeleteCategory] = useState({
+    id: "",
+  });
   const [editData, setEditData] = useState({
     name: "",
     image: "",
@@ -36,6 +43,22 @@ const CategoryPage = () => {
     fetchCategory();
   }, []);
 
+  const handleDeleteCategory = async () => {
+    try {
+      const res = await Axios({
+        ...SummaryApi.deleteCategory,
+        data: deleteCategory,
+      });
+      const { data: resData } = res;
+      if (resData.success) {
+        toast.success(resData.message);
+        fetchCategory();
+        setOpenDelete(false);
+      }
+    } catch (error) {
+      AxiosToastError(error);
+    }
+  };
   return (
     <section>
       <div className="p-2 shadow-md flex justify-between items-center">
@@ -68,7 +91,13 @@ const CategoryPage = () => {
                 >
                   Edit
                 </button>
-                <button className="border flex-1 px-2 py-1 bg-red-100 text-slate-800 hover:bg-red-200 rounded">
+                <button
+                  onClick={() => {
+                    setOpenDelete(true);
+                    setDeleteCategory(category);
+                  }}
+                  className="border flex-1 px-2 py-1 bg-red-100 text-slate-800 hover:bg-red-200 rounded"
+                >
                   Delete
                 </button>
               </div>
@@ -88,6 +117,13 @@ const CategoryPage = () => {
           data={editData}
           close={() => setOpenEdit(false)}
           fetchData={fetchCategory}
+        />
+      )}
+      {openDelete && (
+        <ConfirmBox
+          close={() => setOpenDelete(false)}
+          cancel={() => setOpenDelete(false)}
+          confirm={handleDeleteCategory}
         />
       )}
     </section>
