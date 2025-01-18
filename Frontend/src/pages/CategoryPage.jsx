@@ -8,6 +8,7 @@ import EditCategory from "../components/EditCategory";
 import ConfirmBox from "../components/ConfirmBox";
 import toast from "react-hot-toast";
 import AxiosToastError from "../utils/AxiosToastError";
+import { useSelector } from "react-redux";
 
 const CategoryPage = () => {
   const [modelOpen, setModelOpen] = useState(false);
@@ -23,25 +24,11 @@ const CategoryPage = () => {
     image: "",
   });
 
-  const fetchCategory = async () => {
-    try {
-      setLoading(true);
-      const res = await Axios({
-        ...SummaryApi.getCategory,
-      });
-      const { data: resData } = res;
-      if (resData.success) {
-        setCategoryData(resData.data);
-      }
-    } catch (error) {
-    } finally {
-      setLoading(false);
-    }
-  };
+  const allCategory = useSelector((state) => state.product.allCategory);
 
   useEffect(() => {
-    fetchCategory();
-  }, []);
+    setCategoryData(allCategory);
+  }, [allCategory]);
 
   const handleDeleteCategory = async () => {
     try {

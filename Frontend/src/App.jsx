@@ -7,6 +7,9 @@ import fetchUserDetails from "./utils/fetchUserDetails";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { setUserDetails } from "./store/userSlice";
+import Axios from "./utils/Axios";
+import SummaryApi from "./common/SummaryApi";
+import { setAllCategory } from "./store/productSlice";
 
 function App() {
   const dispatch = useDispatch();
@@ -15,8 +18,22 @@ function App() {
     dispatch(setUserDetails(userData.data));
   };
 
+  const fetchCategory = async () => {
+    try {
+      const res = await Axios({
+        ...SummaryApi.getCategory,
+      });
+      const { data: resData } = res;
+      if (resData.success) {
+        dispatch(setAllCategory(resData.data))
+      }
+    } catch (error) {
+    }
+  };
+
   useEffect(() => {
     fetchUser();
+    fetchCategory();
   }, []);
 
   return (
