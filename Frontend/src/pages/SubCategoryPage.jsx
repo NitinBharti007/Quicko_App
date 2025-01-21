@@ -6,8 +6,11 @@ import SummaryApi from "../common/SummaryApi";
 import DisplayTable from "../components/DisplayTable";
 import { createColumnHelper } from "@tanstack/react-table";
 import ViewImage from "../components/ViewImage";
-import { LuPencil } from "react-icons/lu";
+import { MdModeEdit } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
+import EditSubCategory from "../components/EditSubCategory";
+import ConfirmBox from "../components/ConfirmBox";
+import toast from "react-hot-toast";
 
 const SubCategoryPage = () => {
   const [openSubCategoryModel, setOpenSubCategoryModel] = useState(false);
@@ -15,6 +18,14 @@ const SubCategoryPage = () => {
   const [loading, setLoading] = useState(false);
   const columnHelper = createColumnHelper();
   const [imageURL, setImageUrl] = useState("");
+  const [openEditSubCategory, setOpenEditSubCategory] = useState(false);
+  const [openDeleteBox, setOpenDeleteBox] = useState(false);
+  const [editData, setEditData] = useState({
+    _id: "",
+  });
+  const [deleteData, setDeleteData] = useState({
+    _id: "",
+  });
   const fetchSubCategory = async () => {
     try {
       setLoading(true);
@@ -32,11 +43,27 @@ const SubCategoryPage = () => {
     }
   };
 
+  const handleDeleteSubCategory = async () => {
+    try {
+      const res = await Axios({
+        ...SummaryApi.deleteSubCategory,
+        data: deleteData,
+      });
+      const { data: resData } = res;
+      if (resData.success) {
+        toast.success("Sub Category Deleted");
+        setOpenDeleteBox(false);
+        setOpenSubCategoryModel(false);
+        fetchSubCategory();
+      }
+    } catch (error) {
+      AxiosToastError(error);
+    }
+  };
+
   useEffect(() => {
     fetchSubCategory();
   }, []);
-  console.log("data", data);
-
   const column = [
     columnHelper.accessor("name", {
       header: "Name",
@@ -78,8 +105,24 @@ const SubCategoryPage = () => {
       cell: ({ row }) => {
         return (
           <div className="flex justify-center items-center gap-2">
-            <button className="border px-4 py-2 bg-green-200 text-black hover:bg-green-400 rounded"><LuPencil size={20} /></button>
-            <button className="border px-4 py-2 bg-red-200 text-black hover:text-red-600 rounded"><MdDelete  size={20}/></button>
+            <button
+              onClick={() => {
+                setOpenEditSubCategory(true);
+                setEditData(row.original);
+              }}
+              className="border px-4 py-2 bg-green-200 text-black hover:text-green-500 rounded"
+            >
+              <MdModeEdit size={20} />
+            </button>
+            <button
+              onClick={() => {
+                setOpenDeleteBox(true);
+                setDeleteData(row.original);
+              }}
+              className="border px-4 py-2 bg-red-200 text-black hover:text-red-600 rounded"
+            >
+              <MdDelete size={20} />
+            </button>
           </div>
         );
       },
@@ -98,7 +141,7 @@ const SubCategoryPage = () => {
         </button>
       </div>
 
-      <div>
+      <div className="overflow-auto w-full max-w-[95vw]">
         <DisplayTable data={data} column={column} />
       </div>
 
@@ -106,6 +149,24 @@ const SubCategoryPage = () => {
         <UploadSubCategoryModel close={() => setOpenSubCategoryModel(false)} />
       )}
       {imageURL && <ViewImage url={imageURL} close={() => setImageUrl("")} />}
+
+      {openEditSubCategory && (
+        <EditSubCategory
+          data={editData}
+          close={() => setOpenEditSubCategory(false)}
+          fetchData={fetchSubCategory}
+        />
+      )}
+
+      {openDeleteBox && (
+        <ConfirmBox
+          cancel={() => setOpenDeleteBox(false)}
+          confirm={() => handleDeleteSubCategory()}
+          data={deleteData}
+          close={() => setOpenDeleteBox(false)}
+          fetchData={fetchSubCategory}
+        />
+      )}
     </section>
   );
 };

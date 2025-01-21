@@ -24,11 +24,26 @@ const CategoryPage = () => {
     image: "",
   });
 
-  const allCategory = useSelector((state) => state.product.allCategory);
+  const fetchCategory = async () => {
+    try {
+      setLoading(true);
+      const response = await Axios({
+        ...SummaryApi.getCategory,
+      });
+      const { data: resData } = response;
+
+      if (resData.success) {
+        setCategoryData(resData.data);
+      }
+    } catch (error) {
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setCategoryData(allCategory);
-  }, [allCategory]);
+    fetchCategory();
+  }, []);
 
   const handleDeleteCategory = async () => {
     try {
