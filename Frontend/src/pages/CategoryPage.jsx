@@ -8,7 +8,7 @@ import EditCategory from "../components/EditCategory";
 import ConfirmBox from "../components/ConfirmBox";
 import toast from "react-hot-toast";
 import AxiosToastError from "../utils/AxiosToastError";
-import { useSelector } from "react-redux";
+
 
 const CategoryPage = () => {
   const [modelOpen, setModelOpen] = useState(false);
