@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import UploadImage from "../utils/UploadImage";
+import Loading from "../components/Loading";
+import ViewImage from "../components/ViewImage";
+import { MdDelete } from "react-icons/md";
 
 const UploadProducts = () => {
   const [data, setData] = useState({
@@ -15,6 +18,8 @@ const UploadProducts = () => {
     description: "",
     more_details: {},
   });
+  const [loading, setloading] = useState(false);
+  const [viewImageURL, setViewImageURL] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,16 +36,26 @@ const UploadProducts = () => {
     if (!file) {
       return;
     }
+    setloading(true);
     const ImageRes = await UploadImage(file);
-
     const { data: ImgRes } = ImageRes;
     const ImageUrl = ImgRes.data.url;
-    setData((prev)=>{
-      return{
+    setData((prev) => {
+      return {
         ...prev,
-        image: [...prev.image, ImageUrl], 
-      }
-    })
+        image: [...prev.image, ImageUrl],
+      };
+    });
+    setloading(false);
+  };
+
+  const handleDeleteImage = () => {
+    setData((prev) => {
+      return {
+        ...prev,
+        image: [...prev.image.slice(0, -1)],
+      };
+    });
   };
 
   return (
@@ -85,8 +100,15 @@ const UploadProducts = () => {
                 className="bg-blue-50 h-28 border rounded flex justify-center items-center cursor-pointer"
               >
                 <div className=" flex flex-col justify-center items-center">
-                  <FaCloudUploadAlt size={32} />
-                  <p>Upload Image</p>
+                  {loading ? (
+                    <Loading />
+                  ) : (
+                    <>
+                      <FaCloudUploadAlt size={32} />
+                      <p>Upload Image</p>
+                    </>
+                  )}
+
                   <input
                     type="file"
                     id="productImage"
@@ -97,21 +119,37 @@ const UploadProducts = () => {
                 </div>
               </label>
               {/* Uploaded Image  */}
-              <div>
-                {
-                  data.image.map((img, index)=>{
-                    return(
-                      <div>
-                        <img src={img} alt="" />
+              <div className="my-2 flex flex-wrap gap-4">
+                {data.image.map((img, index) => {
+                  return (
+                    <div
+                      key={img + index}
+                      className="h-20 w-20 min-w-20 bg-blue-50 border relative group"
+                    >
+                      <img
+                        src={img}
+                        alt=""
+                        className="h-full w-full object-scale-down cursor-pointer"
+                        onClick={() => setViewImageURL(img)}
+                      />
+                      <div
+                        onClick={handleDeleteImage}
+                        className="absolute bottom-0 right-0 bg-red-500 hover:bg-red-600 p-1 rounded-l-full cursor-pointer text-white hidden group-hover:block"
+                      >
+                        <MdDelete />
                       </div>
-                    )
-                  })
-                }
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
+          
         </form>
       </div>
+      {viewImageURL && (
+        <ViewImage url={viewImageURL} close={() => setViewImageURL("")} />
+      )}
     </section>
   );
 };
