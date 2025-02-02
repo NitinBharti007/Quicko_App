@@ -10,6 +10,7 @@ import { setUserDetails } from "./store/userSlice";
 import Axios from "./utils/Axios";
 import SummaryApi from "./common/SummaryApi";
 import { setAllCategory } from "./store/productSlice";
+import { setAllSubCategory } from "./store/productSlice";
 
 function App() {
   const dispatch = useDispatch();
@@ -17,7 +18,6 @@ function App() {
     const userData = await fetchUserDetails();
     dispatch(setUserDetails(userData.data));
   };
-
   const fetchCategory = async () => {
     try {
       const res = await Axios({
@@ -25,15 +25,26 @@ function App() {
       });
       const { data: resData } = res;
       if (resData.success) {
-        dispatch(setAllCategory(resData.data))
+        dispatch(setAllCategory(resData.data));
       }
-    } catch (error) {
-    }
+    } catch (error) {}
+  };
+  const fetchSubCategory = async () => {
+    try {
+      const res = await Axios({
+        ...SummaryApi.getSubCategory,
+      });
+      const { data: resData } = res;
+      if (resData.success) {
+        dispatch(setAllSubCategory(resData.data));
+      }
+    } catch (error) {}
   };
 
   useEffect(() => {
     fetchUser();
     fetchCategory();
+    fetchSubCategory();
   }, []);
 
   return (
