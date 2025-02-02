@@ -7,6 +7,11 @@ import { MdDelete } from "react-icons/md";
 import { useSelector } from "react-redux";
 import { IoClose } from "react-icons/io5";
 import AddMoreFields from "../components/AddMoreFields";
+import AxiosToastError from "../utils/AxiosToastError";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
+import toast from "react-hot-toast";
+import SuccessAlert from "../utils/SuccessAlert";
 
 const UploadProducts = () => {
   const [data, setData] = useState({
@@ -99,13 +104,41 @@ const UploadProducts = () => {
     setOpenAddFields(false);
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await Axios({
+        ...SummaryApi.createProducts,
+        data: data,
+      });
+      const { data: resData } = res;
+      if (resData.success) {
+        SuccessAlert(resData.message);
+      }
+      setData({
+        name: "",
+        image: [],
+        category: [],
+        subCategory: [],
+        unit: "",
+        stock: "",
+        price: "",
+        discount: "",
+        description: "",
+        more_details: {},
+      });
+    } catch (error) {
+      AxiosToastError(error);
+    }
+  };
+
   return (
     <section>
       <div className="p-2 shadow-md flex justify-between items-center">
         <h2 className="font-semibold">Upload Products</h2>
       </div>
       <div className="p-4">
-        <form className="grid gap-2">
+        <form className="grid gap-2" onSubmit={handleSubmit}>
           <div className="grid gap-1">
             <label htmlFor="name" className="font-semibold">
               Name
@@ -351,7 +384,7 @@ const UploadProducts = () => {
           </div>
           {Object?.keys(data?.more_details)?.map((k, index) => {
             return (
-              <div className="grid gap-1">
+              <div key={index} className="grid gap-1">
                 <label htmlFor={k} className="font-semibold">
                   {k}
                 </label>
@@ -378,10 +411,13 @@ const UploadProducts = () => {
           })}
           <div
             onClick={() => setOpenAddFields(true)}
-            className="bg-primary-200 hover:bg-white border hover:border-primary-200 hover:text-neutral-900 w-28 py-1 px-3 font-semibold text-center rounded cursor-pointer"
+            className="hover:bg-primary-200 bg-white border border-primary-200 hover:text-neutral-900 w-28 py-1 px-3 font-semibold text-center rounded cursor-pointer"
           >
             Add Fields
           </div>
+          <button className="border py-2 font-semibold tracking-wider rounded bg-primary-200 hover:bg-primary-100">
+            Submit
+          </button>
         </form>
       </div>
       {viewImageURL && (
