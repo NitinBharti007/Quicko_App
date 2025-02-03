@@ -79,7 +79,11 @@ export const getProductController = async (req, res) => {
       : {};
     const skip = (page - 1) * limit;
     const [data, totalCount] = await Promise.all([
-      ProductModel.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).populate('category subCategory'),
+      ProductModel.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("category subCategory"),
       ProductModel.countDocuments(query),
     ]);
 
@@ -99,3 +103,32 @@ export const getProductController = async (req, res) => {
     });
   }
 };
+
+export const getProductByCategory = async (req, res) => {
+  try {
+    const { id } = req.body;
+    if (!id) {
+      return res.status(400).json({
+        message: "Category id is required",
+        error: true,
+        success: false,
+      });
+    }
+    const product = await ProductModel.find({ category: { $in: id } }).limit(
+      15
+    );
+    return res.json({
+      message: "Product Data",
+      error: false,
+      success: true,
+      data: product,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || error,
+      error: true,
+      success: false,
+    });
+  }
+};
+

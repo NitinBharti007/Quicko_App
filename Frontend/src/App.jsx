@@ -9,8 +9,12 @@ import { useDispatch } from "react-redux";
 import { setUserDetails } from "./store/userSlice";
 import Axios from "./utils/Axios";
 import SummaryApi from "./common/SummaryApi";
-import { setAllCategory } from "./store/productSlice";
-import { setAllSubCategory } from "./store/productSlice";
+import {
+  setAllCategory,
+  setAllSubCategory,
+  setLoadingCategory,
+} from "./store/productSlice";
+import AxiosToastError from "./utils/AxiosToastError";
 
 function App() {
   const dispatch = useDispatch();
@@ -20,6 +24,7 @@ function App() {
   };
   const fetchCategory = async () => {
     try {
+      dispatch(setLoadingCategory(true));
       const res = await Axios({
         ...SummaryApi.getCategory,
       });
@@ -27,7 +32,11 @@ function App() {
       if (resData.success) {
         dispatch(setAllCategory(resData.data));
       }
-    } catch (error) {}
+    } catch (error) {
+      AxiosToastError(error);
+    } finally {
+      dispatch(setLoadingCategory(false));
+    }
   };
   const fetchSubCategory = async () => {
     try {
