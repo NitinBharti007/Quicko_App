@@ -328,7 +328,7 @@ const UploadProducts = () => {
             </label>
             <input
               id="unit"
-              type="number"
+              type="text"
               name="unit"
               placeholder="Enter product unit"
               value={data.unit}
@@ -390,7 +390,7 @@ const UploadProducts = () => {
                 </label>
                 <input
                   id={k}
-                  type="number"
+                  type="text"
                   name={k}
                   placeholder={`Enter product ${k}`}
                   value={data?.more_details[k]}

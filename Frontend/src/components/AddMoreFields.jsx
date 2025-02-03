@@ -12,6 +12,7 @@ const AddMoreFields = ({ close, value, onChange, submit }) => {
           </div>
         </div>
         <input
+          required
           value={value}
           onChange={onChange}
           className="bg-blue-50 my-3 w-full p-2 border outline-none focus-within:border-primary-100 rounded"

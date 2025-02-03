@@ -64,6 +64,7 @@ const SubCategoryPage = () => {
   useEffect(() => {
     fetchSubCategory();
   }, []);
+  
   const column = [
     columnHelper.accessor("name", {
       header: "Name",

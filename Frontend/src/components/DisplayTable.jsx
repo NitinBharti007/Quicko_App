@@ -5,6 +5,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import Nodata from "./Nodata";
 
 const DisplayTable = ({ data, column }) => {
   const table = useReactTable({
@@ -32,7 +33,7 @@ const DisplayTable = ({ data, column }) => {
             </tr>
           ))}
         </thead>
-        <tbody>
+        <tbody>        
           {table.getRowModel().rows.map((row, index) => (
             <tr key={row.id}>
               <td className="border px-3 py-1">{index + 1}</td>

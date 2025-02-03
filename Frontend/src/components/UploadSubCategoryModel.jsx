@@ -6,6 +6,7 @@ import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import toast from "react-hot-toast";
 import AxiosToastError from "../utils/AxiosToastError";
+import Nodata from "./Nodata";
 
 const UploadSubCategoryModel = ({ close, fetchData }) => {
   const [loading, setLoading] = useState(false);
