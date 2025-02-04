@@ -132,3 +132,49 @@ export const getProductByCategory = async (req, res) => {
   }
 };
 
+export const getProductByCategoryAndSubCategory = async (req, res) => {
+  try {
+    const { categoryId, subCategoryId, page, limit } = req.body;
+    if (!categoryId || !subCategoryId) {
+      return res.status(400).json({
+        message: "Category id and sub category id is required",
+        error: true,
+        success: false,
+      });
+    }
+    if (!page) {
+      page = 1;
+    }
+    if (!limit) {
+      limit = 10;
+    }
+
+    const query = {
+      category: { $in: categoryId },
+      subCategory: { $in: subCategoryId },
+    };
+
+    const [data, dataCount] = await Promise.all([
+      ProductModel.find(query)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+      ProductModel.countDocuments(query),
+    ]);
+    return res.json({
+      message: "Product Data",
+      error: false,
+      success: true,
+      data: data,
+      totalCount: dataCount,
+      page: page,
+      limit: limit,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || error,
+      error: true,
+      success: false,
+    });
+  }
+};

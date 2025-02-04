@@ -43,7 +43,7 @@ const Home = () => {
           />
         </div>
       </div>
-      <div className=" container mx-auto px-4 my-2 grid grid-cols-4 md:grid-cols-8 lg:grid-cols-10 gap-2 cursor-pointer">
+      <div className=" container mx-auto px-4 my-2 grid grid-cols-4 md:grid-cols-8 lg:grid-cols-10 gap-2">
         {loadingCategory
           ? new Array(12).fill(null).map((c, index) => {
               return (
@@ -69,7 +69,7 @@ const Home = () => {
                     <img
                       src={cat.image}
                       alt={cat.name}
-                      className="w-full h-full object-scale-down"
+                      className="w-full h-full object-scale-down cursor-pointer"
                     />
                   </div>
                 </div>
