@@ -93,6 +93,10 @@ const SummaryApi = {
     url: "/api/product/get-product-by-category-and-subCategory",
     method: "post",
   },
+  getProductDetails: {
+    url: "/api/product/product-details",
+    method: "post",
+  },
 };
 
 export default SummaryApi;

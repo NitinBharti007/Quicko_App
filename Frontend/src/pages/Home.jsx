@@ -25,9 +25,9 @@ const Home = () => {
   };
   return (
     <section className="bg-white">
-      <div className="container mx-auto my-4">
+      <div className="container mx-auto">
         <div
-          className={`w-full h-full min-h-48 bg-blue-100 rounded ${
+          className={`w-full h-full min-h-48 rounded ${
             !banner && "animate-pulse my-2"
           } `}
         >

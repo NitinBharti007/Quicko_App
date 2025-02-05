@@ -178,3 +178,29 @@ export const getProductByCategoryAndSubCategory = async (req, res) => {
     });
   }
 };
+
+export const getProductDetails = async (req, res) => {
+  try {
+    const { productId } = req.body;
+    const product = await ProductModel.findOne({ _id: productId });
+    if (!product) {
+      return res.status(404).json({
+        message: "Product not found",
+        error: true,
+        success: false,
+      });
+    }
+    return res.json({
+      message: "Product Details",
+      error: false,
+      success: true,
+      data: product,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || error,
+      error: true,
+      success: false,
+    });
+  }
+};

@@ -18,7 +18,7 @@ import UploadProducts from "../pages/UploadProducts";
 import ProductsAdminPage from "../pages/ProductsAdminPage";
 import AdminPermission from "../layouts/AdminPermission";
 import ProductsListPage from "../pages/ProductsListPage";
-import ProductDisplay from "../components/ProductDisplay";
+import ProductDisplay from "../pages/ProductDisplay";
 
 const router = createBrowserRouter([
   {
