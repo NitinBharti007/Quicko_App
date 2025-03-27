@@ -6,6 +6,9 @@ import SummaryApi from "../common/SummaryApi";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 import { DisplayPriceInRUpees } from "../utils/DisplayPriceInRupees";
 import Divider from "../components/Divider";
+import fast from "../assets/Superfast.png";
+import fasts from "../assets/off.png";
+import wide from "../assets/wides.png";
 
 const ProductDisplay = () => {
   const params = useParams();
@@ -47,6 +50,7 @@ const ProductDisplay = () => {
   const handleScollleft = () => {
     imageContainer.current.scrollLeft -= 100;
   };
+  console.log(data);
 
   return (
     <section className="container mx-auto p-4 grid lg:grid-cols-2">
@@ -106,21 +110,60 @@ const ProductDisplay = () => {
             </button>
           </div>
         </div>
+        <div></div>
       </div>
 
       <div className="p-4 text-base lg:text-lg">
         <p className="bg-green-300 w-fit px-2 rounded-full">10 min</p>
         <h2 className="text-lg font-semibold lg:text-2xl">{data.name}</h2>
         <p>{data.unit}</p>
-        <Divider/>
+        <Divider />
         <div>
           <p>Price</p>
           <div className="border border-green-500 px-3 py-2 bg-green-100 rounded w-fit">
-            <p className="font-semibold text-lg lg:text-xl">{DisplayPriceInRUpees(data.price)}</p>
+            <p className="font-semibold text-lg lg:text-xl">
+              {DisplayPriceInRUpees(data.price)}
+            </p>
           </div>
         </div>
-        <button className="my-4 px-4 py-1 border rounded bg-green-600 hover:bg-green-700 text-white">Add</button>
-        <Divider/>
+        {data.price === 0 ? (
+          <p className="text-2xl py-2 text-red-500 font-medium">Out of Stock</p>
+        ) : (
+          <button className="my-4 px-4 py-1 border rounded bg-green-600 hover:bg-green-700 text-white">
+            Add
+          </button>
+        )}
+
+        <h2 className="font-semibold">Why shop from Quicko?</h2>
+        <div className="">
+          <div className="flex items-center gap-4">
+            <img src={fast} alt="" className="w-20 h-20" />
+            <div className="text-sm">
+              <div className="font-semibold">Superfast Delivery</div>
+              <p>
+                Get your order delivered to your doorstep at the earliest
+                convenience!
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <img src={fasts} alt="" className="w-20 h-20" />
+            <div className="text-sm">
+              <div className="font-semibold">Best Prices & Offers</div>
+              <p>
+                Enjoy the Best Prices & Exclusive Offers for a Budget-Friendly
+                Shopping Experience!
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <img src={wide} alt="" className="w-20 h-20" />
+            <div className="text-sm">
+              <div className="font-semibold">Wide Assortment</div>
+              <p>Explore a Vast Assortment of Products to Suit Every Need!</p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
