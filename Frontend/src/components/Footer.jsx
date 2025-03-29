@@ -2,6 +2,7 @@ import React from "react";
 import { FaFacebook } from "react-icons/fa";
 import { FaInstagram } from "react-icons/fa";
 import { FaLinkedin } from "react-icons/fa";
+import { SiLinktree } from "react-icons/si";
 
 const Footer = () => {
   return (
@@ -10,15 +11,15 @@ const Footer = () => {
         <p>&copy; All rights reserved 2024</p>
         <div className="flex items-center gap-4 justify-center text-2xl">
           <a
-            href="https://www.facebook.com/"
+            href="https://linktr.ee/dev.nitin63"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-primary-100"
           >
-            <FaFacebook />
+            <SiLinktree />
           </a>
           <a
-            href="https://www.instagram.com/"
+            href="https://www.instagram.com/nit3.07"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-primary-100"
@@ -26,7 +27,7 @@ const Footer = () => {
             <FaInstagram />
           </a>
           <a
-            href="https://www.linkedin.com/"
+            href="https://www.linkedin.com/in/nitinbharti1163/"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-primary-100"
