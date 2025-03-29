@@ -88,7 +88,7 @@ const ProductsAdminPage = () => {
           {!productData && !loading && <Nodata />}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {productData.map((p, index) => {
-              return <ProductCardAdmin key={index} data={p} />;
+              return <ProductCardAdmin fetchProductData={fetchProductData} key={index} data={p} />;
             })}
           </div>
         </div>

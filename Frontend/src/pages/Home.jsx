@@ -77,7 +77,7 @@ const Home = () => {
             })}
       </div>
       {/* Display Category wise products  */}
-      {categoryData.map((cat, index) => {
+      {categoryData.slice(0, 6).map((cat, index) => {
         return (
           <CategoryWiseDisplay key={cat._id} id={cat._id} name={cat.name} />
         );

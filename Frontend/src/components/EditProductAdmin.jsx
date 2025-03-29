@@ -13,8 +13,9 @@ import SummaryApi from "../common/SummaryApi";
 import toast from "react-hot-toast";
 import SuccessAlert from "../utils/SuccessAlert";
 
-const EditProductAdmin = ({close, data : propsData}) => {
+const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
   const [data, setData] = useState({
+    _id: propsData._id,
     name: propsData.name,
     image: propsData.image,
     category: propsData.category,
@@ -108,13 +109,17 @@ const EditProductAdmin = ({close, data : propsData}) => {
     e.preventDefault();
     try {
       const res = await Axios({
-        ...SummaryApi.createProducts,
+        ...SummaryApi.updateProductDetails,
         data: data,
       });
       const { data: resData } = res;
       if (resData.success) {
         SuccessAlert(resData.message);
       }
+      if (close) {
+        close();
+      }
+      fetchProductData();
       setData({
         name: "",
         image: [],
@@ -138,7 +143,7 @@ const EditProductAdmin = ({close, data : propsData}) => {
           <div className="p-2 shadow-md flex justify-between items-center">
             <h2 className="font-semibold">Upload Products</h2>
             <button onClick={close} className="hover:text-red-700">
-                <IoClose size={20}/>
+              <IoClose size={20} />
             </button>
           </div>
           <div className="p-4">
@@ -422,7 +427,7 @@ const EditProductAdmin = ({close, data : propsData}) => {
                 Add Fields
               </div>
               <button className="border py-2 font-semibold tracking-wider rounded bg-primary-200 hover:bg-primary-100">
-                Submit
+                Update
               </button>
             </form>
           </div>

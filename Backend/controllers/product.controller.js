@@ -204,3 +204,60 @@ export const getProductDetails = async (req, res) => {
     });
   }
 };
+
+export const updateProductDetails = async (req, res) => {
+  try {
+    const { _id } = req.body;
+    if (!_id) {
+      return res.status(400).json({
+        message: "Provide product _id",
+        success: false,
+        error: true,
+      });
+    }
+    const updateProduct = await ProductModel.updateOne(
+      { _id: _id },
+      {
+        ...req.body,
+      }
+    );
+    return res.json({
+      message: "Update successfully",
+      error: false,
+      success: true,
+      data: updateProduct,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || error,
+      error: true,
+      success: false,
+    });
+  }
+};
+
+export const deleteProductAdmin = async (req, res) => {
+  try {
+    const _id = req.body;
+    if (!_id) {
+      return res.status(400).json({
+        message: "Provide product _id",
+        success: false,
+        error: true,
+      });
+    }
+    const deleteProduct = await ProductModel.deleteOne({ _id: _id });
+    return res.json({
+      message: "Delete successfully",
+      error: false,
+      success: true,
+      data: deleteProduct,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || error,
+      success: false,
+      error: true,
+    });
+  }
+};
