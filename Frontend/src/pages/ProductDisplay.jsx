@@ -9,6 +9,7 @@ import Divider from "../components/Divider";
 import fast from "../assets/Superfast.png";
 import fasts from "../assets/off.png";
 import wide from "../assets/wides.png";
+import { PriceWithDiscount } from "../utils/PriceWithDiscount";
 
 const ProductDisplay = () => {
   const params = useParams();
@@ -120,20 +121,33 @@ const ProductDisplay = () => {
         <Divider />
         <div>
           <p>Price</p>
-          <div className="border border-green-500 px-3 py-2 bg-green-100 rounded w-fit">
-            <p className="font-semibold text-lg lg:text-xl">
-              {DisplayPriceInRUpees(data.price)}
-            </p>
+          <div className="flex items-center gap-2 lg:gap-4">
+            <div className="border border-green-500 px-3 py-2 bg-green-100 rounded w-fit">
+              <p className="font-semibold text-lg lg:text-xl">
+                {DisplayPriceInRUpees(
+                  PriceWithDiscount(data.price, data.discount)
+                )}
+              </p>
+            </div>
+            {data.discount !== 0 && (
+              <p className="line-through text-xm">
+                {DisplayPriceInRUpees(data.price)}
+              </p>
+            )}
+            {data.discount !== 0 && (
+              <p className="text-green-600 text-lg lg:text-xl font-semibold">
+                {data.discount}% off
+              </p>
+            )}
           </div>
         </div>
-        {data.price === 0 ? (
+        {data.stock === 0 ? (
           <p className="text-2xl py-2 text-red-500 font-medium">Out of Stock</p>
         ) : (
           <button className="my-4 px-4 py-1 border rounded bg-green-600 hover:bg-green-700 text-white">
             Add
           </button>
         )}
-
         <h2 className="font-semibold">Why shop from Quicko?</h2>
         <div className="">
           <div className="flex items-center gap-4">
