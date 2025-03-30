@@ -111,7 +111,11 @@ const ProductDisplay = () => {
             </button>
           </div>
         </div>
-        <div></div>
+
+        <div>
+          <p>Description</p>
+        </div>
+
       </div>
 
       <div className="p-4 text-base lg:text-lg">
