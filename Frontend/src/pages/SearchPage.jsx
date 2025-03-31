@@ -6,7 +6,8 @@ import Axios from "../utils/Axios";
 import CardProduct from "../components/CardProduct";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useLocation } from "react-router-dom";
-import NoDataFound from "../components/NoData";
+import NoDataFound from "../components/Nodata";
+
 const SearchPage = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
