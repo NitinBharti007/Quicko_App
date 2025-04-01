@@ -5,7 +5,7 @@ const auth = async (req, res, next) => {
       req.cookies.accessToken || req?.headers?.authorization?.split(" ")[1];
     if (!token) {
       return res.status(401).json({
-        message: "Provide Token",
+        message: "User not authenticated",
       });
     }
     const decode = await jwt.verify(token, process.env.SECRET_KEY_ACCESS_TOKEN);

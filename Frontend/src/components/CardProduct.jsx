@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { DisplayPriceInRUpees } from "../utils/DisplayPriceInRupees";
 import { Link } from "react-router-dom";
 import { validUrl } from "../utils/ValidURL";
 import { PriceWithDiscount } from "../utils/PriceWithDiscount";
+import AddToCart from "./AddToCart";
 
 const CardProduct = ({ data }) => {
   const url = `/product/${validUrl(data.name)}-${data._id}`;
+
   return (
     <Link
       to={url}
@@ -42,11 +44,11 @@ const CardProduct = ({ data }) => {
         </div>
         <div className="">
           {data.stock === 0 ? (
-            <p className="text-red-500 text-sm text-ellipsis text-center">Out Of Stock</p>
+            <p className="text-red-500 text-sm text-ellipsis text-center">
+              Out Of Stock
+            </p>
           ) : (
-            <button className="border bg-green-600 hover:bg-green-700 text-white px-3 lg:px-4 py-1 rounded">
-              Add
-            </button>
+            <AddToCart data={data} />
           )}
         </div>
       </div>
