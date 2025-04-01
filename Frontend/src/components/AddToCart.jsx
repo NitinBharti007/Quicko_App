@@ -70,14 +70,14 @@ const AddToCart = ({ data }) => {
         <div className="flex">
           <button
             onClick={handleQtyDecrement}
-            className="bg-green-600 hover:bg-green-700 text-white rounded flex-1 w-full p-1"
+            className="bg-green-600 hover:bg-green-700 text-white rounded flex-1 w-full p-1 flex justify-center items-center"
           >
             <FaMinus />
           </button>
-          <p className="flex-1 w-full px-1 font-semibold">{qty}</p>
+          <p className="flex-1 w-full px-1 font-semibold flex justify-center items-center">{qty}</p>
           <button
             onClick={handleQtyIncrement}
-            className="bg-green-600 hover:bg-green-700 text-white rounded flex-1 w-full p-1"
+            className="bg-green-600 hover:bg-green-700 text-white rounded flex-1 w-full p-1 flex justify-center items-center"
           >
             <FaPlus />
           </button>

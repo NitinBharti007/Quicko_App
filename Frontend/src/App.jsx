@@ -17,10 +17,11 @@ import {
 } from "./store/productSlice";
 import AxiosToastError from "./utils/AxiosToastError";
 import GlobalProvider from "./provider/GlobalProvider";
+import CartMobile from "./components/CartMobile";
 
 function App() {
   const dispatch = useDispatch();
-  const [cartItems, setCartItems] = useState([]);
+
   const fetchUser = async () => {
     const userData = await fetchUserDetails();
     dispatch(setUserDetails(userData.data));
@@ -52,7 +53,6 @@ function App() {
       }
     } catch (error) {}
   };
-  
 
   useEffect(() => {
     fetchUser();
@@ -68,6 +68,10 @@ function App() {
         <Outlet />
       </main>
       <Footer />
+      <Toaster />
+      <div className="sticky bottom-4 p-2">
+        <CartMobile />
+      </div>
     </GlobalProvider>
   );
 }

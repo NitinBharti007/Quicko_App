@@ -9,6 +9,7 @@ import { useSelector } from "react-redux";
 import { GoTriangleDown, GoTriangleUp } from "react-icons/go";
 import UserMenu from "./UserMenu";
 import { DisplayPriceInRUpees } from "../utils/DisplayPriceInRupees";
+import { useGlobalContext } from "../provider/GlobalProvider";
 
 const Header = () => {
   const [isMobile] = useMobile();
@@ -16,26 +17,27 @@ const Header = () => {
   const navigate = useNavigate();
   const [openUserMenu, setOpenUserMenu] = useState(false);
   const user = useSelector((state) => state?.user);
-  const cartItems = useSelector((state) => state?.cartItem?.cart) || [];
-  const [totalPrice, setTotalPrice] = useState(0);
-  const [totalQuantity, setTotalQuantity] = useState(0);
+  const cartItems = useSelector((state) => state?.cartItem?.cart);
+  const { totalPrice, totalQuantity } = useGlobalContext()
+  // const [totalPrice, setTotalPrice] = useState(0);
+  // const [totalQuantity, setTotalQuantity] = useState(0);
 
-  useEffect(() => {
-    if (cartItems && cartItems.length > 0) {
-      const totalPrice = cartItems.reduce((acc, item) => {
-        return acc + (item.productId?.price || 0) * (item.quantity || 0);
-      }, 0);
-      setTotalPrice(totalPrice);
+  // useEffect(() => {
+  //   if (cartItems && cartItems.length > 0) {
+  //     const totalPrice = cartItems.reduce((acc, item) => {
+  //       return acc + (item.productId?.price || 0) * (item.quantity || 0);
+  //     }, 0);
+  //     setTotalPrice(totalPrice);
 
-      const totalQuantity = cartItems.reduce((acc, item) => {
-        return acc + (item.quantity || 0);
-      }, 0);
-      setTotalQuantity(totalQuantity);
-    } else {
-      setTotalPrice(0);
-      setTotalQuantity(0);
-    }
-  }, [cartItems]);
+  //     const totalQuantity = cartItems.reduce((acc, item) => {
+  //       return acc + (item.quantity || 0);
+  //     }, 0);
+  //     setTotalQuantity(totalQuantity);
+  //   } else {
+  //     setTotalPrice(0);
+  //     setTotalQuantity(0);
+  //   }
+  // }, [cartItems]);
 
   const redirectToLoginPage = () => {
     navigate("/login");
@@ -49,9 +51,8 @@ const Header = () => {
     if (!user._id) {
       navigate("/login");
       return;
-    }
-    else{
-      navigate("/mobile-menu")
+    } else {
+      navigate("/mobile-menu");
     }
   };
   const isSearchPage = location.pathname === "/search";
@@ -92,7 +93,7 @@ const Header = () => {
               className="text-neutral-600 lg:hidden mt-3"
               onClick={handleOpenMenuMobile}
             >
-              <FaRegCircleUser size={29}/>
+              <FaRegCircleUser size={29} />
             </button>
             {/* Desktop  */}
             <div className="hidden lg:flex items-center gap-10">
@@ -130,7 +131,7 @@ const Header = () => {
                   <BsCart4 size={26} />
                 </div>
                 <div className="font-semibold">
-                  {cartItems && cartItems.length > 0 ? (
+                  {cartItems && cartItems?.length > 0 ? (
                     <div>
                       <p>{totalQuantity} items</p>
                       <p>{DisplayPriceInRUpees(totalPrice)}</p>

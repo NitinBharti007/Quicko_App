@@ -10,6 +10,7 @@ import fast from "../assets/Superfast.png";
 import fasts from "../assets/off.png";
 import wide from "../assets/wides.png";
 import { PriceWithDiscount } from "../utils/PriceWithDiscount";
+import AddToCart from "../components/AddToCart";
 
 const ProductDisplay = () => {
   const params = useParams();
@@ -143,9 +144,12 @@ const ProductDisplay = () => {
         {data.stock === 0 ? (
           <p className="text-2xl py-2 text-red-500 font-medium">Out of Stock</p>
         ) : (
-          <button className="my-4 px-4 py-1 border rounded bg-green-600 hover:bg-green-700 text-white">
-            Add
-          </button>
+          // <button className="my-4 px-4 py-1 border rounded bg-green-600 hover:bg-green-700 text-white">
+          //   Add
+          // </button>
+          <div className="my-4">
+            <AddToCart data={data} />
+          </div>
         )}
         <h2 className="font-semibold">Why shop from Quicko?</h2>
         <div className="">
