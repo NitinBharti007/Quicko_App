@@ -21,7 +21,7 @@ const auth = async (req, res, next) => {
     next();
   } catch (error) {
     return res.status(500).json({
-      message: "Error in authentication",
+      message: "Please login to access this resource",
       error: true,
       success: false,
     });

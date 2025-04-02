@@ -39,19 +39,31 @@ const AddToCart = ({ data }) => {
       setLoading(false);
     }
   };
-  const handleQtyDecrement = (e) => {
+  const handleQtyDecrement = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (qty === 1) {
-      removeCartItems(cartDetails?._id);
+      const res = await removeCartItems(cartDetails?._id);
+      if (res.success) {
+        toast.success("Item removed from cart");
+        fetchCartItems();
+      }
     } else {
-      updateCartItems(cartDetails?._id, qty - 1);
+      const res = await updateCartItems(cartDetails?._id, qty - 1);
+      if (res.success) {
+        toast.success("Item removed");
+        fetchCartItems();
+      }
     }
   };
-  const handleQtyIncrement = (e) => {
+  const handleQtyIncrement = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    updateCartItems(cartDetails?._id, qty + 1);
+    const res = await updateCartItems(cartDetails?._id, qty + 1);
+    if (res.success) {
+      toast.success("Item added");
+      fetchCartItems();
+    }
   };
   useEffect(() => {
     const checkIsInCart = cartItems.some(
@@ -74,7 +86,9 @@ const AddToCart = ({ data }) => {
           >
             <FaMinus />
           </button>
-          <p className="flex-1 w-full px-1 font-semibold flex justify-center items-center">{qty}</p>
+          <p className="flex-1 w-full px-1 font-semibold flex justify-center items-center">
+            {qty}
+          </p>
           <button
             onClick={handleQtyIncrement}
             className="bg-green-600 hover:bg-green-700 text-white rounded flex-1 w-full p-1 flex justify-center items-center"
