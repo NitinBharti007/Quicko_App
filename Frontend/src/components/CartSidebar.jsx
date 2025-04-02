@@ -1,6 +1,6 @@
 import React from "react";
 import { IoClose } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../provider/GlobalProvider";
 import { DisplayPriceInRUpees } from "../utils/DisplayPriceInRupees";
 import { FaCaretRight } from "react-icons/fa";
@@ -8,10 +8,25 @@ import { useSelector } from "react-redux";
 import AddToCart from "./AddToCart";
 import { PriceWithDiscount } from "../utils/PriceWithDiscount";
 import NoItems from "../assets/EmptyCart.jpg";
+import toast from "react-hot-toast";
+
 const CartSidebar = ({ close }) => {
   const { totalPrice, notDiscountedTotalPrice, totalQuantity } =
     useGlobalContext();
   const cartItems = useSelector((state) => state?.cartItem?.cart);
+  const user = useSelector((state) => state?.user);
+  const navigate = useNavigate();
+  const redirectToCheckoutPage = () => {
+    if (user) {
+      navigate("/checkout");
+      if (close) {
+        close();
+      }
+      return;
+    } else {
+    }
+    toast("Please login");
+  };
   return (
     <section className="fixed bg-neutral-900 top-0 right-0 left-0 bottom-0 bg-opacity-50 z-50 h-full">
       <div className="bg-white w-full max-w-sm min-h-screen max-h-screen ml-auto">
@@ -70,7 +85,7 @@ const CartSidebar = ({ close }) => {
                     );
                   })}
               </div>
-              <div className="bg-white p-2 sticky bottom-3">
+              <div className="bg-white p-2">
                 <h3 className="font-semibold">Bill Details</h3>
                 <div className="flex justify-between items-center gap-4 ml-1">
                   <p>Total Price :</p>
@@ -121,7 +136,10 @@ const CartSidebar = ({ close }) => {
           <div className="p-2">
             <div className="bg-green-700 p-4 rounded text-neutral-100 font-bold text-base sticky bottom-3 flex justify-between items-center">
               <div>{DisplayPriceInRUpees(totalPrice)}</div>
-              <button className="flex items-center gap-1">
+              <button
+                onClick={redirectToCheckoutPage}
+                className="flex items-center gap-1"
+              >
                 Checkout
                 <span>
                   <FaCaretRight />

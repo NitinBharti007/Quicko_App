@@ -20,6 +20,7 @@ import AdminPermission from "../layouts/AdminPermission";
 import ProductsListPage from "../pages/ProductsListPage";
 import ProductDisplay from "../pages/ProductDisplay";
 import CartMobilePage from "../pages/CartMobilePage";
+import CheckoutPage from "../pages/CheckoutPage";
 
 const router = createBrowserRouter([
   {
@@ -125,6 +126,10 @@ const router = createBrowserRouter([
         path: "/cart",
         element: <CartMobilePage/>,
       },
+      {
+        path: "/checkout",
+        element: <CheckoutPage/>
+      }
     ],
   },
 ]);

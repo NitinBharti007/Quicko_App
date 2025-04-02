@@ -60,7 +60,7 @@ const AddToCart = ({ data }) => {
     e.preventDefault();
     e.stopPropagation();
     const res = await updateCartItems(cartDetails?._id, qty + 1);
-    if (res.success) {
+    if (res?.success) {
       toast.success("Item added");
       fetchCartItems();
     }
