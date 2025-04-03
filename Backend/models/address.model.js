@@ -28,12 +28,16 @@ const addressSchema = new Schema(
       type: Boolean,
       default: true,
     },
+    userId: {
+      type: mongoose.Schema.ObjectId,
+      default: "",
+    },
   },
   {
     timestamps: true,
   }
 );
 
-const AddresModel = mongoose.model("Address", addressSchema);
+const AddressModel = mongoose.model("Address", addressSchema);
 
-export default addressSchema;
+export default AddressModel;
