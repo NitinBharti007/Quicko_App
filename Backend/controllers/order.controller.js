@@ -113,8 +113,8 @@ export async function paymentController(req, res) {
         addressId: addressId,
       },
       line_items: line_items,
-      success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_URL}/cancel?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: "https://quicko.vercel.app/success?session_id={CHECKOUT_SESSION_ID}",
+      cancel_url: "https://quicko.vercel.app/cancel?session_id={CHECKOUT_SESSION_ID}",
     };
 
     console.log("Creating Stripe session with params:", JSON.stringify(params, null, 2));
