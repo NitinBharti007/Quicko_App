@@ -57,13 +57,38 @@ const CheckoutPage = () => {
       setIsProcessing(true);
       const loadingToast = toast.loading("Processing payment...");
 
-      // Initialize Stripe
+      // Check if Stripe public key is configured
       const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+      if (!stripePublicKey) {
+        throw new Error("Stripe public key is not configured");
+      }
+      
+      console.log("Initializing Stripe with public key:", stripePublicKey.substring(0, 10) + "...");
+      
+      // Initialize Stripe
       const stripe = await loadStripe(stripePublicKey);
       
       if (!stripe) {
         throw new Error("Failed to load Stripe");
       }
+
+      console.log("Stripe loaded successfully");
+
+      // Validate cart items
+      if (!cartItemList || cartItemList.length === 0) {
+        throw new Error("Your cart is empty");
+      }
+
+      // Validate address
+      if (selectedAddress === null || !addressList[selectedAddress]) {
+        throw new Error("Please select a delivery address");
+      }
+
+      console.log("Creating checkout session with:", {
+        itemsCount: cartItemList.length,
+        totalAmount: totalPrice,
+        addressId: addressList[selectedAddress]._id
+      });
 
       // Create checkout session
       const res = await Axios({
@@ -86,7 +111,7 @@ const CheckoutPage = () => {
       const session = res.data.data;
       
       if (!session?.id) {
-        throw new Error("Failed to create checkout session");
+        throw new Error("Failed to create checkout session: No session ID returned");
       }
 
       console.log("Redirecting to Stripe checkout with session ID:", session.id);
@@ -97,6 +122,7 @@ const CheckoutPage = () => {
       });
 
       if (error) {
+        console.error("Stripe redirect error:", error);
         throw error;
       }
 
