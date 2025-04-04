@@ -21,7 +21,6 @@ const TrackOrder = () => {
     { id: 'out_for_delivery', label: 'Out for Delivery', icon: FaTruck },
     { id: 'delivered', label: 'Delivered', icon: FaCheckCircle },
   ];
-
   useEffect(() => {
     const fetchOrderDetails = async () => {
       try {
