@@ -4,14 +4,111 @@ import { useGlobalContext } from "../provider/GlobalProvider";
 import AddAddressBox from "../components/AddAddressBox";
 import { useSelector } from "react-redux";
 import { FaPlus, FaMapMarkerAlt, FaPhoneAlt } from "react-icons/fa";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
+import AxiosToastError from "../utils/AxiosToastError";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { loadStripe } from "@stripe/stripe-js";
 
 const CheckoutPage = () => {
-  const { totalPrice, notDiscountedTotalPrice, totalQuantity } =
+  const { totalPrice, notDiscountedTotalPrice, totalQuantity, fetchCartItems } =
     useGlobalContext();
   const [openAddAdress, setOpenAddAddress] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState(0);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const addressList = useSelector((state) => state.address.addressList);
-  console.log(addressList[selectedAddress]);
+  const cartItemList = useSelector((state) => state.cartItem.cart);
+  const navigate = useNavigate();
+
+  // Check if we can proceed with payment
+  const canProceed = selectedAddress !== null && cartItemList.length > 0;
+
+  const handleCashOnDelivery = async () => {
+    if (!canProceed) return;
+
+    try {
+      const res = await Axios({
+        ...SummaryApi.cashOnDelivery,
+        data: {
+          list_items: cartItemList,
+          totalAmt: totalPrice,
+          addressId: addressList[selectedAddress]._id,
+          subTotalAmt: totalPrice,
+        },
+      });
+      const { data: resData } = res;
+      if (resData.success) {
+        toast.success(resData.message);
+        if (fetchCartItems) {
+          fetchCartItems();
+        }
+        navigate("/success");
+      }
+    } catch (error) {
+      AxiosToastError(error);
+    }
+  };
+
+  const handleOnlinePayment = async () => {
+    if (!canProceed || isProcessing) return;
+
+    try {
+      setIsProcessing(true);
+      const loadingToast = toast.loading("Processing payment...");
+
+      // Initialize Stripe
+      const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+      const stripe = await loadStripe(stripePublicKey);
+      
+      if (!stripe) {
+        throw new Error("Failed to load Stripe");
+      }
+
+      // Create checkout session
+      const res = await Axios({
+        ...SummaryApi.checkout,
+        data: {
+          list_items: cartItemList,
+          totalAmt: totalPrice,
+          addressId: addressList[selectedAddress]._id,
+          subTotalAmt: totalPrice,
+        },
+      });
+
+      console.log("Checkout response:", res);
+
+      // Check if the response has the expected structure
+      if (!res.data || !res.data.success) {
+        throw new Error(res.data?.message || "Failed to create checkout session");
+      }
+
+      const session = res.data.data;
+      
+      if (!session?.id) {
+        throw new Error("Failed to create checkout session");
+      }
+
+      console.log("Redirecting to Stripe checkout with session ID:", session.id);
+      
+      // Redirect to Stripe checkout
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: session.id
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast.dismiss(loadingToast);
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error(error.message || "Payment failed. Please try again.");
+      AxiosToastError(error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <section className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-4 sm:py-6 md:py-8">
@@ -30,7 +127,7 @@ const CheckoutPage = () => {
                       key={index}
                       htmlFor={"address" + index}
                       className={`block cursor-pointer border rounded-lg p-3 sm:p-4 transition-all duration-200 ${
-                        selectedAddress == index
+                        selectedAddress === index
                           ? "border-blue-500 bg-blue-50"
                           : "border-gray-200 hover:bg-blue-50"
                       } ${!address.status && "hidden"}`}
@@ -40,7 +137,7 @@ const CheckoutPage = () => {
                           id={"address" + index}
                           type="radio"
                           value={index}
-                          onChange={(e) => setSelectedAddress(e.target.value)}
+                          onChange={(e) => setSelectedAddress(Number(e.target.value))}
                           name="address"
                           className="mt-1 w-4 h-4 sm:w-5 sm:h-5 text-blue-600 border-gray-300 focus:ring-blue-500"
                         />
@@ -126,10 +223,26 @@ const CheckoutPage = () => {
               </div>
 
               <div className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
-                <button className="w-full py-2 sm:py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors duration-200 text-sm sm:text-base">
-                  Online Payment
+                <button
+                  onClick={handleOnlinePayment}
+                  disabled={!canProceed || isProcessing}
+                  className={`w-full py-2 sm:py-3 px-4 bg-green-600 text-white font-semibold rounded-lg transition-colors duration-200 text-sm sm:text-base ${
+                    canProceed && !isProcessing
+                      ? "hover:bg-green-700"
+                      : "opacity-50 cursor-not-allowed"
+                  }`}
+                >
+                  {isProcessing ? "Processing..." : "Online Payment"}
                 </button>
-                <button className="w-full py-2 sm:py-3 px-4 border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-white font-semibold rounded-lg transition-colors duration-200 text-sm sm:text-base">
+                <button
+                  onClick={handleCashOnDelivery}
+                  disabled={!canProceed || isProcessing}
+                  className={`w-full py-2 sm:py-3 px-4 border-2 text-green-600 font-semibold rounded-lg transition-colors duration-200 text-sm sm:text-base ${
+                    canProceed && !isProcessing
+                      ? "border-green-600 hover:bg-green-600 hover:text-white"
+                      : "border-gray-300 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
                   Cash On Delivery
                 </button>
               </div>

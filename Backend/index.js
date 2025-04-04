@@ -12,6 +12,8 @@ import subCategoryRouter from "./route/subCategory.route.js";
 import productRouter from "./route/product.route.js";
 import cartRouter from "./route/cart.route.js";
 import addressRouter from "./route/address.route.js";
+import orderRouter from "./route/order.route.js";
+import { webhookController } from "./controllers/order.controller.js";
 dotenv.config();
 
 const app = express();
@@ -23,7 +25,6 @@ app.use(
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   })
 );
-app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("combined"));
 app.use(
@@ -31,6 +32,12 @@ app.use(
     crossOriginResourcePolicy: false,
   })
 );
+
+// Stripe webhook route needs raw body
+app.post("/api/order/webhook", express.raw({type: 'application/json'}), webhookController);
+
+// Parse JSON for all other routes
+app.use(express.json());
 
 const PORT = 8080 || process.env.port;
 
@@ -47,6 +54,7 @@ app.use("/api/subCategory", subCategoryRouter);
 app.use("/api/product", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/address", addressRouter);
+app.use("/api/order", orderRouter);
 
 connectDB().then(() => {
   app.listen(PORT, () => {

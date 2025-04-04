@@ -1,5 +1,5 @@
-export const baseURL = "http://localhost:8080";
-// export const baseURL = "https://quicko-app-backend.onrender.com"
+export const baseURL = import.meta.env.VITE_API_URL;
+
 
 const SummaryApi = {
   register: {
@@ -141,6 +141,18 @@ const SummaryApi = {
   disableAddress: {
     url: "/api/address/disable",
     method: "delete",
+  },
+  cashOnDelivery: {
+    url: "/api/order/cash-on-delivery",
+    method: "post",
+  },
+  checkout: {
+    url: "/api/order/checkout",
+    method: "post",
+  },
+  getOrderDetails: {
+    url: "/api/order/get-order-details",
+    method: "get",
   },
 };
 

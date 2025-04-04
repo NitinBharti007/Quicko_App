@@ -95,7 +95,7 @@ const GlobalProvider = ({ children }) => {
       setNotDiscountedTotalPrice(0);
     }
   }, [cartItems]);
-  
+
   const handleLogOut = () => {
     localStorage.clear();
     dispatch(addToCart([]));
@@ -116,9 +116,11 @@ const GlobalProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchCartItems();
+    if (user) {
+      fetchCartItems();
+      fetchAddress();
+    }
     handleLogOut();
-    fetchAddress();
   }, [user]);
 
   return (

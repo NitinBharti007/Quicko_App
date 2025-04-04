@@ -11,6 +11,7 @@ import MobileUserPage from "../pages/MobileUserPage";
 import Dashboard from "../layouts/Dashboard";
 import Profile from "../pages/Profile";
 import MyOrders from "../pages/MyOrders";
+import TrackOrder from "../pages/TrackOrder";
 import Address from "../pages/Address";
 import CategoryPage from "../pages/CategoryPage";
 import SubCategoryPage from "../pages/SubCategoryPage";
@@ -21,6 +22,8 @@ import ProductsListPage from "../pages/ProductsListPage";
 import ProductDisplay from "../pages/ProductDisplay";
 import CartMobilePage from "../pages/CartMobilePage";
 import CheckoutPage from "../pages/CheckoutPage";
+import Success from "../pages/Success";
+import Cancel from "../pages/Cancel";
 
 const router = createBrowserRouter([
   {
@@ -70,6 +73,10 @@ const router = createBrowserRouter([
           {
             path: "orders",
             element: <MyOrders />,
+          },
+          {
+            path: "track-order/:orderId",
+            element: <TrackOrder />,
           },
           {
             path: "address",
@@ -129,7 +136,15 @@ const router = createBrowserRouter([
       {
         path: "/checkout",
         element: <CheckoutPage/>
-      }
+      },
+      {
+        path: "/success",
+        element: <Success />,
+      },
+      {
+        path: "/cancel",
+        element: <Cancel />,
+      },
     ],
   },
 ]);
