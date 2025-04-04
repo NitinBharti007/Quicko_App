@@ -116,11 +116,14 @@ const GlobalProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    if (user) {
+    if (user && user._id) {
+      // User is logged in
       fetchCartItems();
       fetchAddress();
+    } else {
+      // User is logged out
+      handleLogOut();
     }
-    handleLogOut();
   }, [user]);
 
   return (

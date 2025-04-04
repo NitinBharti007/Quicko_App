@@ -66,24 +66,9 @@ export async function paymentController(req, res) {
   try {
     const userId = req.userId;
     const { list_items, totalAmt, addressId, subTotalAmt } = req.body;
-    
-    console.log("Payment request received for user:", userId);
-    console.log("Cart items count:", list_items?.length);
-    
-    // Check if Stripe is properly configured
-    if (!process.env.STRIPE_SECRET_KEY) {
-      console.error("Stripe secret key is not configured");
-      return res.status(500).json({
-        message: "Payment service is not properly configured",
-        success: false,
-        error: true,
-      });
-    }
-    
     const user = await UserModel.findById(userId);
 
     if (!user) {
-      console.error("User not found:", userId);
       return res.status(404).json({
         message: "User not found",
         success: false,
@@ -92,7 +77,6 @@ export async function paymentController(req, res) {
     }
 
     if (!list_items || !list_items.length) {
-      console.error("Empty cart for user:", userId);
       return res.status(400).json({
         message: "Cart is empty",
         success: false,
@@ -100,29 +84,13 @@ export async function paymentController(req, res) {
       });
     }
 
-    // Log product details for debugging
-    console.log("First product details:", {
-      name: list_items[0]?.productId?.name,
-      price: list_items[0]?.productId?.price,
-      discount: list_items[0]?.productId?.discount,
-      image: list_items[0]?.productId?.image,
-    });
-
     const line_items = list_items.map((items) => {
-      // Ensure images is an array and filter out any invalid URLs
-      const images = Array.isArray(items.productId.image) 
-        ? items.productId.image.filter(url => url && typeof url === 'string' && url.startsWith('http'))
-        : [];
-
-      // Log filtered images for debugging
-      console.log(`Product ${items.productId.name} images:`, images);
-
       return {
         price_data: {
           currency: "inr",
           product_data: {
             name: items.productId.name,
-            images: images.length > 0 ? images : undefined,
+            images: items.productId.image,
             metadata: {
               productId: items.productId._id,
             },
@@ -134,16 +102,6 @@ export async function paymentController(req, res) {
         quantity: items.quantity,
       };
     });
-
-    // Check if FRONTEND_URL is configured
-    if (!process.env.FRONTEND_URL) {
-      console.error("FRONTEND_URL is not configured");
-      return res.status(500).json({
-        message: "Frontend URL is not properly configured",
-        success: false,
-        error: true,
-      });
-    }
 
     const params = {
       submit_type: "pay",
@@ -161,25 +119,15 @@ export async function paymentController(req, res) {
 
     console.log("Creating Stripe session with params:", JSON.stringify(params, null, 2));
     
-    try {
-      const session = await Stripe.checkout.sessions.create(params);
-      console.log("Stripe session created successfully:", session.id);
+    const session = await Stripe.checkout.sessions.create(params);
+    console.log("Stripe session created:", session.id);
 
-      return res.status(200).json({
-        success: true,
-        data: session,
-      });
-    } catch (stripeError) {
-      console.error("Stripe API error:", stripeError);
-      return res.status(500).json({
-        message: stripeError.message || "Error creating payment session",
-        success: false,
-        error: true,
-        stripeError: stripeError.type || "unknown",
-      });
-    }
+    return res.status(200).json({
+      success: true,
+      data: session,
+    });
   } catch (error) {
-    console.error('Error in payment controller:', error);
+    console.error('Error creating Stripe session:', error);
     return res.status(500).json({
       message: error.message || "Error creating payment session",
       success: false,
