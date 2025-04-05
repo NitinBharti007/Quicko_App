@@ -18,6 +18,7 @@ import {
 import AxiosToastError from "./utils/AxiosToastError";
 import GlobalProvider from "./provider/GlobalProvider";
 import CartMobile from "./components/CartMobile";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   const dispatch = useDispatch();
@@ -56,7 +57,6 @@ function App() {
   };
 
   useEffect(() => {
-    window.scrollTo(0, 0);
     fetchUser();
     fetchCategory();
     fetchSubCategory();
@@ -64,6 +64,7 @@ function App() {
 
   return (
     <GlobalProvider>
+      <ScrollToTop />
       <Header />
       <Toaster position="top-center" />
       <main className="min-h-[78vh]">
