@@ -241,6 +241,7 @@ export async function webhookController(req, res) {
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
   
   console.log("Webhook received with signature:", sig ? "Present" : "Missing");
+  console.log("Webhook secret configured:", endpointSecret ? "Yes" : "No");
   
   if (!endpointSecret) {
     console.error("STRIPE_WEBHOOK_SECRET is not configured");
@@ -407,7 +408,7 @@ export async function getOrderBySessionController(req, res) {
     const session = await Stripe.checkout.sessions.retrieve(sessionId, {
       expand: ['line_items'],
     });
-    console.log(`Retrieved Stripe session: ${session.id}`);
+    console.log(`Retrieved Stripe session: ${session.id}, payment status: ${session.payment_status}`);
 
     if (!session) {
       console.error(`Session not found: ${sessionId}`);
@@ -429,8 +430,8 @@ export async function getOrderBySessionController(req, res) {
       });
     }
 
-    // Try to find orders for this user that were created after the session completion
-    let orders = await OrderModel.find({
+    // Find orders for this user that were created after the session completion
+    const orders = await OrderModel.find({
       userId: userId,
       createdAt: { $gte: new Date(session.created * 1000) }
     })
