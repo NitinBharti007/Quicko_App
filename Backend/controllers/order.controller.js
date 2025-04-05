@@ -66,6 +66,30 @@ export async function paymentController(req, res) {
   try {
     const userId = req.userId;
     const { list_items, totalAmt, addressId, subTotalAmt } = req.body;
+    
+    // Log the request details for debugging
+    console.log(`Payment request received for user: ${userId}, items: ${list_items?.length || 0}`);
+    
+    // Check if Stripe is properly configured
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error("Stripe secret key is not configured");
+      return res.status(500).json({
+        message: "Payment service is not properly configured",
+        success: false,
+        error: true,
+      });
+    }
+    
+    // Check if FRONTEND_URL is configured
+    if (!process.env.FRONTEND_URL) {
+      console.error("FRONTEND_URL is not configured");
+      return res.status(500).json({
+        message: "Payment service is not properly configured",
+        success: false,
+        error: true,
+      });
+    }
+    
     const user = await UserModel.findById(userId);
 
     if (!user) {
@@ -85,12 +109,15 @@ export async function paymentController(req, res) {
     }
 
     const line_items = list_items.map((items) => {
+      // Filter out any invalid image URLs
+      const validImages = items.productId.image.filter(url => url && url.trim() !== '');
+      
       return {
         price_data: {
           currency: "inr",
           product_data: {
             name: items.productId.name,
-            images: items.productId.image,
+            images: validImages,
             metadata: {
               productId: items.productId._id,
             },
@@ -119,13 +146,23 @@ export async function paymentController(req, res) {
 
     console.log("Creating Stripe session with params:", JSON.stringify(params, null, 2));
     
-    const session = await Stripe.checkout.sessions.create(params);
-    console.log("Stripe session created:", session.id);
+    try {
+      const session = await Stripe.checkout.sessions.create(params);
+      console.log("Stripe session created:", session.id);
 
-    return res.status(200).json({
-      success: true,
-      data: session,
-    });
+      return res.status(200).json({
+        success: true,
+        data: session,
+      });
+    } catch (stripeError) {
+      console.error('Stripe API error:', stripeError);
+      return res.status(500).json({
+        message: stripeError.message || "Error creating payment session",
+        success: false,
+        error: true,
+        stripeError: stripeError.type || 'unknown',
+      });
+    }
   } catch (error) {
     console.error('Error creating Stripe session:', error);
     return res.status(500).json({
