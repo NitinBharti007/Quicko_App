@@ -429,8 +429,8 @@ export async function getOrderBySessionController(req, res) {
       });
     }
 
-    // Find orders for this user that were created after the session completion
-    const orders = await OrderModel.find({
+    // Try to find orders for this user that were created after the session completion
+    let orders = await OrderModel.find({
       userId: userId,
       createdAt: { $gte: new Date(session.created * 1000) }
     })
@@ -440,13 +440,25 @@ export async function getOrderBySessionController(req, res) {
 
     console.log(`Found ${orders.length} orders for session ${sessionId}`);
 
+    // If no orders found, check if the session is still processing
     if (!orders.length) {
-      console.warn(`No orders found for session ${sessionId}`);
-      return res.status(404).json({
-        message: "Orders not found",
-        success: false,
-        error: true,
-      });
+      if (session.payment_status === 'paid') {
+        // If payment is complete but no orders found, the webhook might not have processed yet
+        // Return a specific status to indicate this
+        return res.json({
+          message: "Payment successful, order processing",
+          data: [],
+          success: true,
+          error: false,
+          processing: true
+        });
+      } else {
+        return res.status(404).json({
+          message: "Orders not found",
+          success: false,
+          error: true,
+        });
+      }
     }
 
     return res.json({

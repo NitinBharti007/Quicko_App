@@ -33,11 +33,17 @@ app.use(
   })
 );
 
-// Stripe webhook route needs raw body
-app.post("/api/order/webhook", express.raw({type: 'application/json'}), webhookController);
+// Parse JSON for all routes except webhook
+app.use((req, res, next) => {
+  if (req.originalUrl === '/api/order/webhook') {
+    next();
+  } else {
+    express.json()(req, res, next);
+  }
+});
 
-// Parse JSON for all other routes
-app.use(express.json());
+// Stripe webhook route with raw body
+app.post("/api/order/webhook", express.raw({type: 'application/json'}), webhookController);
 
 const PORT = 8080 || process.env.port;
 

@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 const Success = () => {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
   const dispatch = useDispatch();
   const sessionId = searchParams.get("session_id");
 
@@ -39,9 +40,22 @@ const Success = () => {
             console.log("Order details response:", res.data);
             
             if (res.data.success) {
-              dispatch(setOrder([res.data.data]));
-              toast.success("Order placed successfully!");
-              console.log("Order details fetched and stored in Redux");
+              if (res.data.processing) {
+                // If order is still processing, retry after a delay
+                if (retryCount < 5) {
+                  console.log(`Order still processing, retry ${retryCount + 1}/5`);
+                  setRetryCount(prev => prev + 1);
+                  setTimeout(clearCartAndFetchOrder, 2000); // Retry after 2 seconds
+                  return;
+                } else {
+                  console.warn("Max retries reached, order still processing");
+                  toast.error("Order is taking longer than expected. Please check your orders page in a few minutes.");
+                }
+              } else {
+                dispatch(setOrder([res.data.data]));
+                toast.success("Order placed successfully!");
+                console.log("Order details fetched and stored in Redux");
+              }
             } else {
               console.error("Failed to fetch order details:", res.data.message);
               toast.error("Order placed but details could not be retrieved. Please check your orders page.");
@@ -63,7 +77,7 @@ const Success = () => {
     };
 
     clearCartAndFetchOrder();
-  }, [dispatch, sessionId]);
+  }, [dispatch, sessionId, retryCount]);
 
   if (loading) {
     return (
