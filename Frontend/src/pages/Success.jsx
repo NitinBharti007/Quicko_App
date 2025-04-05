@@ -17,22 +17,38 @@ const Success = () => {
   const cart = useSelector((state) => state.cart);
   const sessionId = searchParams.get("session_id");
 
+  // Function to clear the cart
+  const clearCart = async () => {
+    if (cart?.length > 0 && !cartCleared) {
+      try {
+        console.log("Clearing cart...");
+        await Axios({
+          ...SummaryApi.clearCart,
+        });
+        dispatch(addToCart([]));
+        setCartCleared(true);
+        console.log("Cart cleared successfully");
+        return true;
+      } catch (error) {
+        console.error("Error clearing cart:", error);
+        return false;
+      }
+    } else {
+      console.log("Cart is already empty or has been cleared");
+      return true;
+    }
+  };
+
   useEffect(() => {
     const clearCartAndFetchOrder = async () => {
       try {
         console.log("Processing successful payment with session ID:", sessionId);
         
-        // Only clear the cart if it's not already empty and hasn't been cleared
-        if (cart?.length > 0 && !cartCleared) {
-          console.log("Clearing cart...");
-          await Axios({
-            ...SummaryApi.clearCart,
-          });
-          dispatch(addToCart([]));
-          setCartCleared(true);
-          console.log("Cart cleared successfully");
-        } else {
-          console.log("Cart is already empty or has been cleared");
+        // Clear the cart first
+        const cartClearedSuccessfully = await clearCart();
+        if (!cartClearedSuccessfully) {
+          toast.error("Failed to clear cart. Please try again.");
+          return;
         }
 
         // Fetch order details if session ID exists
