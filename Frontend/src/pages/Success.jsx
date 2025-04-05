@@ -66,69 +66,69 @@ const Success = () => {
         }
 
         // Fetch order details if session ID exists
-        if (sessionId) {
-          console.log("Fetching order details for session:", sessionId);
-          try {
-            const res = await Axios({
-              ...SummaryApi.getOrderBySession,
-              params: { sessionId },
-            });
+        // if (sessionId) {
+        //   console.log("Fetching order details for session:", sessionId);
+        //   try {
+        //     const res = await Axios({
+        //       ...SummaryApi.getOrderBySession,
+        //       params: { sessionId },
+        //     });
 
-            console.log("Order details response:", res.data);
+        //     console.log("Order details response:", res.data);
 
-            if (res.data.success) {
-              if (res.data.processing) {
-                // If order is still processing, retry after a delay
-                if (retryCount < 5) {
-                  console.log(
-                    `Order still processing, retry ${retryCount + 1}/5`
-                  );
-                  setRetryCount((prev) => prev + 1);
-                  setTimeout(clearCartAndFetchOrder, 2000); // Retry after 2 seconds
-                  return;
-                } else {
-                  console.warn("Max retries reached, order still processing");
-                  toast.error(
-                    "Order is taking longer than expected. Please check your orders page in a few minutes."
-                  );
-                  setOrderProcessed(true);
-                }
-              } else if (res.data.data && res.data.data.length > 0) {
-                dispatch(setOrder(res.data.data));
-                if (!toastShown.current) {
-                  toast.success("Order placed successfully!");
-                  toastShown.current = true;
-                }
-                console.log("Order details fetched and stored in Redux");
-                setOrderProcessed(true);
-              } else {
-                console.error("No order data returned");
-                toast.error(
-                  "Order placed but details could not be retrieved. Please check your orders page."
-                );
-                setOrderProcessed(true);
-              }
-            } else {
-              console.error("Failed to fetch order details:", res.data.message);
-              toast.error(
-                "Order placed but details could not be retrieved. Please check your orders page."
-              );
-              setOrderProcessed(true);
-            }
-          } catch (orderError) {
-            console.error("Error fetching order details:", orderError);
-            toast.error(
-              "Order placed but details could not be retrieved. Please check your orders page."
-            );
-            setOrderProcessed(true);
-          }
-        } else {
-          console.warn("No session ID found in URL");
-          toast.error(
-            "Order information not found. Please check your orders page."
-          );
-          setOrderProcessed(true);
-        }
+        //     if (res.data.success) {
+        //       if (res.data.processing) {
+        //         // If order is still processing, retry after a delay
+        //         if (retryCount < 5) {
+        //           console.log(
+        //             `Order still processing, retry ${retryCount + 1}/5`
+        //           );
+        //           setRetryCount((prev) => prev + 1);
+        //           setTimeout(clearCartAndFetchOrder, 2000); // Retry after 2 seconds
+        //           return;
+        //         } else {
+        //           console.warn("Max retries reached, order still processing");
+        //           toast.error(
+        //             "Order is taking longer than expected. Please check your orders page in a few minutes."
+        //           );
+        //           setOrderProcessed(true);
+        //         }
+        //       } else if (res.data.data && res.data.data.length > 0) {
+        //         dispatch(setOrder(res.data.data));
+        //         if (!toastShown.current) {
+        //           toast.success("Order placed successfully!");
+        //           toastShown.current = true;
+        //         }
+        //         console.log("Order details fetched and stored in Redux");
+        //         setOrderProcessed(true);
+        //       } else {
+        //         console.error("No order data returned");
+        //         toast.error(
+        //           "Order placed but details could not be retrieved. Please check your orders page."
+        //         );
+        //         setOrderProcessed(true);
+        //       }
+        //     } else {
+        //       console.error("Failed to fetch order details:", res.data.message);
+        //       toast.error(
+        //         "Order placed but details could not be retrieved. Please check your orders page."
+        //       );
+        //       setOrderProcessed(true);
+        //     }
+        //   } catch (orderError) {
+        //     console.error("Error fetching order details:", orderError);
+        //     toast.error(
+        //       "Order placed but details could not be retrieved. Please check your orders page."
+        //     );
+        //     setOrderProcessed(true);
+        //   }
+        // } else {
+        //   console.warn("No session ID found in URL");
+        //   toast.error(
+        //     "Order information not found. Please check your orders page."
+        //   );
+        //   setOrderProcessed(true);
+        // }
       } catch (error) {
         console.error("Error processing successful payment:", error);
         toast.error("Something went wrong. Please contact support.");
