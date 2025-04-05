@@ -13,6 +13,7 @@ import { PriceWithDiscount } from "../utils/PriceWithDiscount";
 import AddToCart from "../components/AddToCart";
 
 const ProductDisplay = () => {
+  const params = useParams();
   const imageContainer = useRef();
   let productID = params?.product?.split("-")?.slice(-1)[0];
   const [data, setData] = useState({
@@ -43,7 +44,7 @@ const ProductDisplay = () => {
 
   useEffect(() => {
     fetchProdutsDetails();
-  }, []);
+  }, [params]);
 
   const handleScollRight = () => {
     imageContainer.current.scrollLeft += 100;
