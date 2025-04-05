@@ -154,6 +154,10 @@ const SummaryApi = {
     url: "/api/order/get-order-details",
     method: "get",
   },
+  getOrderBySession: {
+    url: "/api/order/get-order-by-session",
+    method: "get",
+  },
 };
 
 export default SummaryApi;

@@ -17,25 +17,45 @@ const Success = () => {
   useEffect(() => {
     const clearCartAndFetchOrder = async () => {
       try {
+        console.log("Processing successful payment with session ID:", sessionId);
+        
         // Clear the cart
+        console.log("Clearing cart...");
         await Axios({
           ...SummaryApi.clearCart,
         });
         dispatch(addToCart([]));
+        console.log("Cart cleared successfully");
 
         // Fetch order details if session ID exists
         if (sessionId) {
-          const res = await Axios({
-            ...SummaryApi.getOrderBySession,
-            params: { sessionId },
-          });
-          if (res.data.success) {
-            dispatch(setOrder([res.data.data]));
-            toast.success("Order placed successfully!");
+          console.log("Fetching order details for session:", sessionId);
+          try {
+            const res = await Axios({
+              ...SummaryApi.getOrderBySession,
+              params: { sessionId },
+            });
+            
+            console.log("Order details response:", res.data);
+            
+            if (res.data.success) {
+              dispatch(setOrder([res.data.data]));
+              toast.success("Order placed successfully!");
+              console.log("Order details fetched and stored in Redux");
+            } else {
+              console.error("Failed to fetch order details:", res.data.message);
+              toast.error("Order placed but details could not be retrieved. Please check your orders page.");
+            }
+          } catch (orderError) {
+            console.error("Error fetching order details:", orderError);
+            toast.error("Order placed but details could not be retrieved. Please check your orders page.");
           }
+        } else {
+          console.warn("No session ID found in URL");
+          toast.error("Order information not found. Please check your orders page.");
         }
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error processing successful payment:", error);
         toast.error("Something went wrong. Please contact support.");
       } finally {
         setLoading(false);
