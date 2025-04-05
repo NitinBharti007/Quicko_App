@@ -90,6 +90,9 @@ export async function paymentController(req, res) {
       });
     }
     
+    // Log the FRONTEND_URL for debugging
+    console.log("Using FRONTEND_URL:", process.env.FRONTEND_URL);
+    
     const user = await UserModel.findById(userId);
 
     if (!user) {
@@ -130,6 +133,11 @@ export async function paymentController(req, res) {
       };
     });
 
+    // Ensure FRONTEND_URL doesn't end with a slash
+    const frontendUrl = process.env.FRONTEND_URL.endsWith('/') 
+      ? process.env.FRONTEND_URL.slice(0, -1) 
+      : process.env.FRONTEND_URL;
+
     const params = {
       submit_type: "pay",
       mode: "payment",
@@ -140,8 +148,8 @@ export async function paymentController(req, res) {
         addressId: addressId,
       },
       line_items: line_items,
-      success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_URL}/cancel?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${frontendUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${frontendUrl}/cancel?session_id={CHECKOUT_SESSION_ID}`,
     };
 
     console.log("Creating Stripe session with params:", JSON.stringify(params, null, 2));
