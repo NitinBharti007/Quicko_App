@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { FaCheckCircle, FaHome, FaShoppingBag } from "react-icons/fa";
 import { Link, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -14,10 +14,12 @@ const Success = () => {
   const [loading, setLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const [cartCleared, setCartCleared] = useState(false);
+  const [orderProcessed, setOrderProcessed] = useState(false);
   const dispatch = useDispatch();
   const cart = useSelector((state) => state.cart);
   const { fetchCartItems } = useGlobalContext();
   const sessionId = searchParams.get("session_id");
+  const toastShown = useRef(false);
 
   // Function to clear the cart
   const clearCart = async () => {
@@ -45,6 +47,11 @@ const Success = () => {
 
   useEffect(() => {
     const clearCartAndFetchOrder = async () => {
+      // Prevent multiple executions
+      if (orderProcessed) {
+        return;
+      }
+
       try {
         console.log("Processing successful payment with session ID:", sessionId);
         
@@ -77,37 +84,47 @@ const Success = () => {
                 } else {
                   console.warn("Max retries reached, order still processing");
                   toast.error("Order is taking longer than expected. Please check your orders page in a few minutes.");
+                  setOrderProcessed(true);
                 }
               } else if (res.data.data && res.data.data.length > 0) {
                 dispatch(setOrder(res.data.data));
-                toast.success("Order placed successfully!");
+                if (!toastShown.current) {
+                  toast.success("Order placed successfully!");
+                  toastShown.current = true;
+                }
                 console.log("Order details fetched and stored in Redux");
+                setOrderProcessed(true);
               } else {
                 console.error("No order data returned");
                 toast.error("Order placed but details could not be retrieved. Please check your orders page.");
+                setOrderProcessed(true);
               }
             } else {
               console.error("Failed to fetch order details:", res.data.message);
               toast.error("Order placed but details could not be retrieved. Please check your orders page.");
+              setOrderProcessed(true);
             }
           } catch (orderError) {
             console.error("Error fetching order details:", orderError);
             toast.error("Order placed but details could not be retrieved. Please check your orders page.");
+            setOrderProcessed(true);
           }
         } else {
           console.warn("No session ID found in URL");
           toast.error("Order information not found. Please check your orders page.");
+          setOrderProcessed(true);
         }
       } catch (error) {
         console.error("Error processing successful payment:", error);
         toast.error("Something went wrong. Please contact support.");
+        setOrderProcessed(true);
       } finally {
         setLoading(false);
       }
     };
 
     clearCartAndFetchOrder();
-  }, [dispatch, sessionId, retryCount, cart, cartCleared, fetchCartItems]);
+  }, [dispatch, sessionId, retryCount, cart, cartCleared, fetchCartItems, orderProcessed]);
 
   if (loading) {
     return (
