@@ -431,7 +431,7 @@ export async function getOrderBySessionController(req, res) {
     }
 
     // Find orders for this user that were created after the session completion
-    const orders = await OrderModel.find({
+    let orders = await OrderModel.find({
       userId: userId,
       createdAt: { $gte: new Date(session.created * 1000) }
     })
@@ -441,11 +441,58 @@ export async function getOrderBySessionController(req, res) {
 
     console.log(`Found ${orders.length} orders for session ${sessionId}`);
 
-    // If no orders found, check if the session is still processing
+    // If no orders found and payment is successful, create the order directly
+    if (!orders.length && session.payment_status === 'paid') {
+      console.log("No orders found but payment is successful. Creating order directly...");
+      
+      // Get line items from the session
+      const lineItems = await Stripe.checkout.sessions.listLineItems(session.id);
+      console.log(`Found ${lineItems.data.length} line items in session`);
+      
+      // Create order items
+      const orderProduct = await getOrderProductItems({
+        lineItems: lineItems,
+        userId: userId,
+        addressId: session.metadata.addressId,
+        paymentId: session.payment_intent,
+        payment_status: "PAID",
+      });
+      
+      console.log(`Created ${orderProduct.length} order items`);
+      
+      if (orderProduct.length > 0) {
+        // Insert orders
+        const newOrders = await OrderModel.insertMany(orderProduct);
+        console.log(`Inserted ${newOrders.length} orders into database`);
+        
+        // Update user's orderHistory with the new order IDs
+        const orderIds = newOrders.map(order => order._id);
+        await UserModel.findByIdAndUpdate(
+          userId,
+          { 
+            $push: { orderHistory: { $each: orderIds } },
+            shopping_cart: [] 
+          }
+        );
+        
+        // Clear cart items
+        await CartModel.deleteMany({ userId: userId });
+        
+        // Fetch the newly created orders with populated fields
+        orders = await OrderModel.find({
+          _id: { $in: orderIds }
+        })
+        .sort({ createdAt: -1 })
+        .populate('delivery_address')
+        .populate('productId');
+        
+        console.log(`Retrieved ${orders.length} newly created orders`);
+      }
+    }
+
+    // If still no orders found, return processing status
     if (!orders.length) {
       if (session.payment_status === 'paid') {
-        // If payment is complete but no orders found, the webhook might not have processed yet
-        // Return a specific status to indicate this
         return res.json({
           message: "Payment successful, order processing",
           data: [],
