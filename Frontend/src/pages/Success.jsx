@@ -23,7 +23,7 @@ const Success = () => {
         console.log("Processing successful payment with session ID:", sessionId);
         
         // Only clear the cart if it's not already empty and hasn't been cleared
-        if (cart.length > 0 && !cartCleared) {
+        if (cart?.length > 0 && !cartCleared) {
           console.log("Clearing cart...");
           await Axios({
             ...SummaryApi.clearCart,
