@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FaCheckCircle, FaHome, FaShoppingBag } from "react-icons/fa";
 import { Link, useSearchParams } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import { addToCart } from "../store/cartSlice";
@@ -12,7 +12,9 @@ const Success = () => {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
+  const [cartCleared, setCartCleared] = useState(false);
   const dispatch = useDispatch();
+  const cart = useSelector((state) => state.cart);
   const sessionId = searchParams.get("session_id");
 
   useEffect(() => {
@@ -20,13 +22,18 @@ const Success = () => {
       try {
         console.log("Processing successful payment with session ID:", sessionId);
         
-        // Clear the cart
-        console.log("Clearing cart...");
-        await Axios({
-          ...SummaryApi.clearCart,
-        });
-        dispatch(addToCart([]));
-        console.log("Cart cleared successfully");
+        // Only clear the cart if it's not already empty and hasn't been cleared
+        if (cart.length > 0 && !cartCleared) {
+          console.log("Clearing cart...");
+          await Axios({
+            ...SummaryApi.clearCart,
+          });
+          dispatch(addToCart([]));
+          setCartCleared(true);
+          console.log("Cart cleared successfully");
+        } else {
+          console.log("Cart is already empty or has been cleared");
+        }
 
         // Fetch order details if session ID exists
         if (sessionId) {
@@ -80,7 +87,7 @@ const Success = () => {
     };
 
     clearCartAndFetchOrder();
-  }, [dispatch, sessionId, retryCount]);
+  }, [dispatch, sessionId, retryCount, cart, cartCleared]);
 
   if (loading) {
     return (
