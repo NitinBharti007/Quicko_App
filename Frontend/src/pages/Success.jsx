@@ -7,6 +7,7 @@ import SummaryApi from "../common/SummaryApi";
 import { addToCart } from "../store/cartSlice";
 import { setOrder } from "../store/orderSlice";
 import toast from "react-hot-toast";
+import { useGlobalContext } from "../provider/GlobalProvider";
 
 const Success = () => {
   const [searchParams] = useSearchParams();
@@ -15,6 +16,7 @@ const Success = () => {
   const [cartCleared, setCartCleared] = useState(false);
   const dispatch = useDispatch();
   const cart = useSelector((state) => state.cart);
+  const { fetchCartItems } = useGlobalContext();
   const sessionId = searchParams.get("session_id");
 
   // Function to clear the cart
@@ -26,6 +28,8 @@ const Success = () => {
           ...SummaryApi.clearCart,
         });
         dispatch(addToCart([]));
+        // Force a refresh of the cart items to update the GlobalProvider state
+        await fetchCartItems();
         setCartCleared(true);
         console.log("Cart cleared successfully");
         return true;
@@ -103,7 +107,7 @@ const Success = () => {
     };
 
     clearCartAndFetchOrder();
-  }, [dispatch, sessionId, retryCount, cart, cartCleared]);
+  }, [dispatch, sessionId, retryCount, cart, cartCleared, fetchCartItems]);
 
   if (loading) {
     return (
