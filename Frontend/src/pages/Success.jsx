@@ -16,7 +16,7 @@ const Success = () => {
   const [cartCleared, setCartCleared] = useState(false);
   const [orderProcessed, setOrderProcessed] = useState(false);
   const dispatch = useDispatch();
-  const cart = useSelector((state) => state.cart);
+  const cart = useSelector((state) => state?.cartItem?.cart);
   const { fetchCartItems } = useGlobalContext();
   const sessionId = searchParams.get("session_id");
   const toastShown = useRef(false);
@@ -53,8 +53,11 @@ const Success = () => {
       }
 
       try {
-        console.log("Processing successful payment with session ID:", sessionId);
-        
+        console.log(
+          "Processing successful payment with session ID:",
+          sessionId
+        );
+
         // Clear the cart first
         const cartClearedSuccessfully = await clearCart();
         if (!cartClearedSuccessfully) {
@@ -70,20 +73,24 @@ const Success = () => {
               ...SummaryApi.getOrderBySession,
               params: { sessionId },
             });
-            
+
             console.log("Order details response:", res.data);
-            
+
             if (res.data.success) {
               if (res.data.processing) {
                 // If order is still processing, retry after a delay
                 if (retryCount < 5) {
-                  console.log(`Order still processing, retry ${retryCount + 1}/5`);
-                  setRetryCount(prev => prev + 1);
+                  console.log(
+                    `Order still processing, retry ${retryCount + 1}/5`
+                  );
+                  setRetryCount((prev) => prev + 1);
                   setTimeout(clearCartAndFetchOrder, 2000); // Retry after 2 seconds
                   return;
                 } else {
                   console.warn("Max retries reached, order still processing");
-                  toast.error("Order is taking longer than expected. Please check your orders page in a few minutes.");
+                  toast.error(
+                    "Order is taking longer than expected. Please check your orders page in a few minutes."
+                  );
                   setOrderProcessed(true);
                 }
               } else if (res.data.data && res.data.data.length > 0) {
@@ -96,22 +103,30 @@ const Success = () => {
                 setOrderProcessed(true);
               } else {
                 console.error("No order data returned");
-                toast.error("Order placed but details could not be retrieved. Please check your orders page.");
+                toast.error(
+                  "Order placed but details could not be retrieved. Please check your orders page."
+                );
                 setOrderProcessed(true);
               }
             } else {
               console.error("Failed to fetch order details:", res.data.message);
-              toast.error("Order placed but details could not be retrieved. Please check your orders page.");
+              toast.error(
+                "Order placed but details could not be retrieved. Please check your orders page."
+              );
               setOrderProcessed(true);
             }
           } catch (orderError) {
             console.error("Error fetching order details:", orderError);
-            toast.error("Order placed but details could not be retrieved. Please check your orders page.");
+            toast.error(
+              "Order placed but details could not be retrieved. Please check your orders page."
+            );
             setOrderProcessed(true);
           }
         } else {
           console.warn("No session ID found in URL");
-          toast.error("Order information not found. Please check your orders page.");
+          toast.error(
+            "Order information not found. Please check your orders page."
+          );
           setOrderProcessed(true);
         }
       } catch (error) {
@@ -124,7 +139,15 @@ const Success = () => {
     };
 
     clearCartAndFetchOrder();
-  }, [dispatch, sessionId, retryCount, cart, cartCleared, fetchCartItems, orderProcessed]);
+  }, [
+    dispatch,
+    sessionId,
+    retryCount,
+    cart,
+    cartCleared,
+    fetchCartItems,
+    orderProcessed,
+  ]);
 
   if (loading) {
     return (
