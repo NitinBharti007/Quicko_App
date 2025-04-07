@@ -21,93 +21,64 @@ const Success = () => {
   const sessionId = searchParams.get("session_id");
   const toastShown = useRef(false);
 
-  // Function to clear the cart
   const clearCart = async () => {
     if (cart?.length > 0 && !cartCleared) {
       try {
-        await Axios({
-          ...SummaryApi.clearCart,
-        });
+        await Axios(SummaryApi.clearCart);
         dispatch(addToCart([]));
-        // Force a refresh of the cart items to update the GlobalProvider state
         await fetchCartItems();
         setCartCleared(true);
         return true;
       } catch (error) {
-        console.error("Error clearing cart:", error);
         return false;
       }
-    } else {
-      return true;
     }
+    return true;
   };
 
   useEffect(() => {
     const clearCartAndFetchOrder = async () => {
-      // Prevent multiple executions
-      if (orderProcessed) {
-        return;
-      }
+      if (orderProcessed) return;
 
       try {
-        console.error(
-          "Processing successful payment with session ID:",
-          sessionId
-        );
-
-        // Clear the cart first
         const cartClearedSuccessfully = await clearCart();
-        if (!cartClearedSuccessfully) {
-          return;
-        }
+        if (!cartClearedSuccessfully) return;
 
-        // Fetch order details if session ID exists
         if (sessionId) {
           try {
             const res = await Axios({
               ...SummaryApi.getOrderBySession,
               params: { sessionId },
             });
+
             if (res.data.success) {
               if (res.data.processing) {
-                // If order is still processing, retry after a delay
                 if (retryCount < 5) {
-                  console.log(
-                    `Order still processing, retry ${retryCount + 1}/5`
-                  );
                   setRetryCount((prev) => prev + 1);
-                  setTimeout(clearCartAndFetchOrder, 2000); // Retry after 2 seconds
+                  setTimeout(clearCartAndFetchOrder, 2000);
                   return;
-                } else {
-                  console.warn("Max retries reached, order still processing");
-                  setOrderProcessed(true);
                 }
-              } else if (res.data.data && res.data.data.length > 0) {
+                setOrderProcessed(true);
+              } else if (res.data.data?.length > 0) {
                 dispatch(setOrder(res.data.data));
                 if (!toastShown.current) {
                   toast.success("Order placed successfully!");
                   toastShown.current = true;
                 }
-                console.log("Order details fetched and stored in Redux");
                 setOrderProcessed(true);
               } else {
-                console.error("No order data returned");
                 setOrderProcessed(true);
               }
             } else {
-              console.error("Failed to fetch order details:", res.data.message);
               setOrderProcessed(true);
             }
-          } catch (orderError) {
-            console.error("Error fetching order details:", orderError);
+          } catch (error) {
             setOrderProcessed(true);
           }
         } else {
-          console.warn("No session ID found in URL");
           setOrderProcessed(true);
         }
       } catch (error) {
-        console.error("Error processing successful payment:", error);
         setOrderProcessed(true);
       } finally {
         setLoading(false);
@@ -115,15 +86,7 @@ const Success = () => {
     };
 
     clearCartAndFetchOrder();
-  }, [
-    dispatch,
-    sessionId,
-    retryCount,
-    cart,
-    cartCleared,
-    fetchCartItems,
-    orderProcessed,
-  ]);
+  }, [dispatch, sessionId, retryCount, cart, cartCleared, fetchCartItems, orderProcessed]);
 
   if (loading) {
     return (
@@ -141,7 +104,6 @@ const Success = () => {
       <div className="container mx-auto px-4 sm:px-6">
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-xl shadow-sm p-6 sm:p-8 md:p-10">
-            {/* Success Icon */}
             <div className="flex justify-center mb-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-green-100 rounded-full animate-ping"></div>
@@ -149,7 +111,6 @@ const Success = () => {
               </div>
             </div>
 
-            {/* Success Message */}
             <div className="text-center mb-8">
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2">
                 Order Placed Successfully!
@@ -159,7 +120,6 @@ const Success = () => {
               </p>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
                 to="/"
