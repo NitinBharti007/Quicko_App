@@ -4,7 +4,7 @@ import CartModel from "../models/cart.model.js";
 import mongoose from "mongoose";
 import Stripe from "../config/stripe.js";
 
-// Helper function to calculate price with discount
+
 export const PriceWithDiscount = (price, discount = 1) => {
   const discountAmount = Math.ceil((Number(price) * Number(discount)) / 100);
   return Number(price) - discountAmount;
