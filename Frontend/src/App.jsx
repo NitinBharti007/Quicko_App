@@ -10,6 +10,8 @@ import { setUserDetails } from "./store/userSlice";
 import Axios from "./utils/Axios";
 import SummaryApi from "./common/SummaryApi";
 import { addToCart } from "./store/cartSlice";
+import { SpeedInsights } from "@vercel/speed-insights/react";
+
 import {
   setAllCategory,
   setAllSubCategory,
@@ -63,17 +65,19 @@ function App() {
   }, []);
 
   return (
-    <GlobalProvider>
-      <ScrollToTop />
-      <Header />
-      <Toaster position="top-center" />
-      <main className="min-h-[78vh]">
+    <SpeedInsights>
+      <GlobalProvider>
+        <ScrollToTop />
+        <Header />
+        <Toaster position="top-center" />
+        <main className="min-h-[78vh]">
         <Outlet />
       </main>
       <Footer />
       <Toaster />
       {location.pathname !== "/checkout" && <CartMobile />}
     </GlobalProvider>
+    </SpeedInsights>
   );
 }
 
