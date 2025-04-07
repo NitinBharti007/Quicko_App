@@ -35,9 +35,9 @@ const Address = () => {
     }
   };
 
-  // Check if all addresses are disabled
-  const allAddressesDisabled =
-    addressList.length > 0 && addressList.every((address) => !address.status);
+  // Check if there are no addresses or if all addresses are disabled
+  const noAddressesFound = addressList.length === 0 || 
+    (addressList.length > 0 && addressList.every((address) => !address.status));
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -59,7 +59,7 @@ const Address = () => {
             </div>
 
             <div className="grid gap-4 sm:gap-6">
-              {!allAddressesDisabled ? (
+              {!noAddressesFound ? (
                 addressList.map((address, index) => (
                   <div
                     key={index}
