@@ -35,8 +35,11 @@ const Address = () => {
     }
   };
 
-  const allAddressesDisabled =
-    addressList.length > 0 && addressList.every((address) => !address.status);
+  // Final condition to show "No saved addresses"
+  const noValidAddresses =
+    !Array.isArray(addressList) ||
+    addressList.length === 0 ||
+    addressList.every((address) => !address.status);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -58,10 +61,12 @@ const Address = () => {
             </div>
 
             <div className="grid gap-4 sm:gap-6">
-              {addressList.length === 0 || allAddressesDisabled ? (
+              {noValidAddresses ? (
                 <div className="text-center py-8">
                   <FaMapMarkerAlt className="mx-auto text-gray-400 text-4xl mb-4" />
-                  <p className="text-gray-600 text-lg">No saved addresses found</p>
+                  <p className="text-gray-600 text-lg">
+                    No saved addresses found
+                  </p>
                 </div>
               ) : (
                 addressList.map(
