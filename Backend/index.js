@@ -31,7 +31,6 @@ app.use(
     crossOriginResourcePolicy: false,
   })
 );
-
 // Stripe webhook route needs raw body
 app.post("/api/order/webhook", express.raw({type: 'application/json'}), webhookController);
 
