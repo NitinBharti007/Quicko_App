@@ -11,7 +11,6 @@ import Axios from "./utils/Axios";
 import SummaryApi from "./common/SummaryApi";
 import { addToCart } from "./store/cartSlice";
 import { SpeedInsights } from "@vercel/speed-insights/react";
-
 import {
   setAllCategory,
   setAllSubCategory,
@@ -26,43 +25,31 @@ function App() {
   const dispatch = useDispatch();
   const location = useLocation();
 
-  const fetchUser = async () => {
-    const userData = await fetchUserDetails();
-    dispatch(setUserDetails(userData?.data));
-  };
-  const fetchCategory = async () => {
+  const fetchData = async () => {
     try {
-      dispatch(setLoadingCategory(true));
-      const res = await Axios({
-        ...SummaryApi.getCategory,
-      });
-      const { data: resData } = res;
-      if (resData.success) {
-        dispatch(setAllCategory(resData.data));
+      const [userData, categoryRes, subCategoryRes] = await Promise.all([
+        fetchUserDetails(),
+        Axios(SummaryApi.getCategory),
+        Axios(SummaryApi.getSubCategory),
+      ]);
+
+      dispatch(setUserDetails(userData?.data));
+
+      if (categoryRes.data.success) {
+        dispatch(setAllCategory(categoryRes.data.data));
+      }
+
+      if (subCategoryRes.data.success) {
+        dispatch(setAllSubCategory(subCategoryRes.data.data));
       }
     } catch (error) {
       AxiosToastError(error);
-    } finally {
-      dispatch(setLoadingCategory(false));
     }
-  };
-  const fetchSubCategory = async () => {
-    try {
-      const res = await Axios({
-        ...SummaryApi.getSubCategory,
-      });
-      const { data: resData } = res;
-      if (resData.success) {
-        dispatch(setAllSubCategory(resData.data));
-      }
-    } catch (error) {}
   };
 
   useEffect(() => {
-    fetchUser();
-    fetchCategory();
-    fetchSubCategory();
-  }, []);
+    fetchData();
+  }, [dispatch]);
 
   return (
     <SpeedInsights>
@@ -71,12 +58,11 @@ function App() {
         <Header />
         <Toaster position="top-center" />
         <main className="min-h-[78vh]">
-        <Outlet />
-      </main>
-      <Footer />
-      <Toaster />
-      {location.pathname !== "/checkout" && <CartMobile />}
-    </GlobalProvider>
+          <Outlet />
+        </main>
+        <Footer />
+        {location.pathname !== "/checkout" && <CartMobile />}
+      </GlobalProvider>
     </SpeedInsights>
   );
 }
