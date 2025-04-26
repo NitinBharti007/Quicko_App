@@ -4,17 +4,15 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 import fetchUserDetails from "./utils/fetchUserDetails";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { setUserDetails } from "./store/userSlice";
 import Axios from "./utils/Axios";
 import SummaryApi from "./common/SummaryApi";
-import { addToCart } from "./store/cartSlice";
-import { SpeedInsights } from "@vercel/speed-insights/react";
+
 import {
   setAllCategory,
   setAllSubCategory,
-  setLoadingCategory,
 } from "./store/productSlice";
 import AxiosToastError from "./utils/AxiosToastError";
 import GlobalProvider from "./provider/GlobalProvider";
@@ -29,18 +27,18 @@ function App() {
     try {
       const [userData, categoryRes, subCategoryRes] = await Promise.all([
         fetchUserDetails(),
-        Axios(SummaryApi.getCategory),
-        Axios(SummaryApi.getSubCategory),
+        Axios(SummaryApi?.getCategory),
+        Axios(SummaryApi?.getSubCategory),
       ]);
 
       dispatch(setUserDetails(userData?.data));
 
-      if (categoryRes.data.success) {
-        dispatch(setAllCategory(categoryRes.data.data));
+      if (categoryRes?.data?.success) {
+        dispatch(setAllCategory(categoryRes?.data?.data));
       }
 
-      if (subCategoryRes.data.success) {
-        dispatch(setAllSubCategory(subCategoryRes.data.data));
+      if (subCategoryRes?.data?.success) {
+        dispatch(setAllSubCategory(subCategoryRes?.data?.data));
       }
     } catch (error) {
       AxiosToastError(error);
@@ -52,7 +50,6 @@ function App() {
   }, [dispatch]);
 
   return (
-    <SpeedInsights>
       <GlobalProvider>
         <ScrollToTop />
         <Header />
@@ -63,7 +60,6 @@ function App() {
         <Footer />
         {location.pathname !== "/checkout" && <CartMobile />}
       </GlobalProvider>
-    </SpeedInsights>
   );
 }
 
