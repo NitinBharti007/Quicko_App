@@ -7,7 +7,7 @@ const Footer = () => {
   return (
     <footer className="border-t">
       <div className="container mx-auto p-4 text-center flex flex-col lg:flex-row lg:justify-between gap-2">
-        <p>&copy; All rights reserved 2024</p>
+        <p>&copy; All rights reserved 2025</p>
         <div className="flex items-center gap-4 justify-center text-2xl">
           <a
             href="https://linktr.ee/dev.nitin63"
