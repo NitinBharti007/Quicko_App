@@ -36,7 +36,6 @@ app.post("/api/order/webhook", express.raw({type: 'application/json'}), webhookC
 
 // Parse JSON for all other routes
 app.use(express.json());
-
 const PORT = process.env.PORT || 8080;
 
 app.get("/", (req, res) => {
