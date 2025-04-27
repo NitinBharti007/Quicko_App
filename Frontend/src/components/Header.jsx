@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import logo from "../assets/logo.jpg";
 import Search from "./Search";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -16,30 +16,12 @@ const Header = () => {
   const [isMobile] = useMobile();
   const location = useLocation();
   const navigate = useNavigate();
+  const menuRef = useRef();
   const [openUserMenu, setOpenUserMenu] = useState(false);
   const user = useSelector((state) => state?.user);
   const cartItems = useSelector((state) => state?.cartItem?.cart);
   const { totalPrice, totalQuantity } = useGlobalContext();
   const [openCartSidebar, setOpenCartSidebar] = useState(false);
-  // const [totalPrice, setTotalPrice] = useState(0);
-  // const [totalQuantity, setTotalQuantity] = useState(0);
-
-  // useEffect(() => {
-  //   if (cartItems && cartItems.length > 0) {
-  //     const totalPrice = cartItems.reduce((acc, item) => {
-  //       return acc + (item.productId?.price || 0) * (item.quantity || 0);
-  //     }, 0);
-  //     setTotalPrice(totalPrice);
-
-  //     const totalQuantity = cartItems.reduce((acc, item) => {
-  //       return acc + (item.quantity || 0);
-  //     }, 0);
-  //     setTotalQuantity(totalQuantity);
-  //   } else {
-  //     setTotalPrice(0);
-  //     setTotalQuantity(0);
-  //   }
-  // }, [cartItems]);
 
   const redirectToLoginPage = () => {
     navigate("/login");
@@ -58,6 +40,19 @@ const Header = () => {
     }
   };
   const isSearchPage = location.pathname === "/search";
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpenUserMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <header className="h-28 lg:h-20 lg:shadow-md sticky top-0 z-40 flex flex-col justify-center gap-1 bg-white">
@@ -91,23 +86,27 @@ const Header = () => {
           {/* Login and Cart */}
           <div className="">
             {/* User Icon display only in Mobile Screen  */}
-            <button
+            {/* <button
               className="text-neutral-600 lg:hidden mt-3"
               onClick={handleOpenMenuMobile}
             >
               <FaRegCircleUser size={29} />
-            </button>
+            </button> */}
+            <div className="lg:hidden">
+              <img onClick={handleOpenMenuMobile} src={user?.avatar} alt="user" className="w-9 h-9 rounded-full object-cover cursor-pointer" />
+            </div>
             {/* Desktop  */}
             <div className="hidden lg:flex items-center gap-10">
               {user?._id ? (
-                <div className="relative">
+                <div className="relative" ref={menuRef}>
                   <div
                     onClick={() => {
                       setOpenUserMenu((preve) => !preve);
                     }}
-                    className="flex items-center gap-1 cursor-pointer select-none"
+                    className="flex items-center gap-1 cursor-pointer select-none border-2 hover:border-green-800 rounded-full p-1"
                   >
-                    <p>Account</p>
+                    <img src={user?.avatar} alt="user" className="w-8 h-8 rounded-full object-cover" />
+                    <p className="text-sm font-semibold">{user?.name}</p>
                     {openUserMenu ? (
                       <GoTriangleUp size={24} />
                     ) : (
