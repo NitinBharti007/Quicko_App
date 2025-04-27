@@ -59,7 +59,7 @@ const Address = () => {
             </div>
 
             <div className="grid gap-4 sm:gap-6">
-              {!allAddressesDisabled ? (
+              {!allAddressesDisabled && addressList.length > 0 ? (
                 addressList.map((address, index) => (
                   <div
                     key={index}

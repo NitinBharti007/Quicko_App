@@ -86,18 +86,21 @@ const Header = () => {
           {/* Login and Cart */}
           <div className="">
             {/* User Icon display only in Mobile Screen  */}
-            {/* <button
-              className="text-neutral-600 lg:hidden mt-3"
-              onClick={handleOpenMenuMobile}
-            >
-              <FaRegCircleUser size={29} />
-            </button> */}
-            <div className="lg:hidden">
-              <img onClick={handleOpenMenuMobile} src={user?.avatar} alt="user" className="w-9 h-9 rounded-full object-cover cursor-pointer" />
-            </div>
+            {
+              user?._id && user?.avatar ? (
+                <div className="lg:hidden">
+                  <img onClick={handleOpenMenuMobile} src={user?.avatar} alt="user" className="w-9 h-9 rounded-full object-cover cursor-pointer" />
+                </div>
+              ):(
+                <div className="lg:hidden">
+                  <button onClick={redirectToLoginPage} className="text-neutral-600 mt-3">
+                  <FaRegCircleUser size={30} />
+                </button>
+              </div>
+            )}
             {/* Desktop  */}
             <div className="hidden lg:flex items-center gap-10">
-              {user?._id ? (
+              {user?._id ?  (
                 <div className="relative" ref={menuRef}>
                   <div
                     onClick={() => {
@@ -105,7 +108,13 @@ const Header = () => {
                     }}
                     className="flex items-center gap-1 cursor-pointer select-none border-2 hover:border-green-800 rounded-full p-1"
                   >
-                    <img src={user?.avatar} alt="user" className="w-8 h-8 rounded-full object-cover" />
+                    {
+                      user?.avatar ? (
+                        <img src={user?.avatar} alt="user" className="w-8 h-8 rounded-full object-cover" />
+                      ) : (
+                        <FaRegCircleUser size={30} />
+                      )
+                    }
                     <p className="text-sm font-semibold">{user?.name}</p>
                     {openUserMenu ? (
                       <GoTriangleUp size={24} />
