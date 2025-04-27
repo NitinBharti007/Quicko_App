@@ -13,6 +13,7 @@ import SummaryApi from "./common/SummaryApi";
 import {
   setAllCategory,
   setAllSubCategory,
+  setLoadingCategory,
 } from "./store/productSlice";
 import AxiosToastError from "./utils/AxiosToastError";
 import GlobalProvider from "./provider/GlobalProvider";
@@ -25,6 +26,7 @@ function App() {
 
   const fetchData = async () => {
     try {
+      dispatch(setLoadingCategory(true));
       const [userData, categoryRes, subCategoryRes] = await Promise.all([
         fetchUserDetails(),
         Axios(SummaryApi?.getCategory),
@@ -42,6 +44,8 @@ function App() {
       }
     } catch (error) {
       AxiosToastError(error);
+    } finally {
+      dispatch(setLoadingCategory(false));
     }
   };
 
