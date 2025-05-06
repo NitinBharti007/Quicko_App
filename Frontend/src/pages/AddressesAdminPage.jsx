@@ -3,6 +3,7 @@ import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import AxiosToastError from "../utils/AxiosToastError";
 import { useNavigate } from "react-router-dom";
+import PageLoading from "../components/PageLoading";
 
 const AdminAddressPage = () => {
   const [addresses, setAddresses] = useState([]);
@@ -39,7 +40,8 @@ const AdminAddressPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <p className="text-lg text-gray-600 animate-pulse">Loading addresses...</p>
+        <PageLoading/>
+        {/* <p className="text-lg text-gray-600 animate-pulse">Loading addresses...</p> */}
       </div>
     );
   }
