@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import toast from "react-hot-toast";
 import AxiosToastError from "../utils/AxiosToastError";
+import Loading from "../components/Loading";
 
 const OrdersAdminPage = () => {
   const [orders, setOrders] = useState([]);
@@ -90,7 +91,8 @@ const OrdersAdminPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <p className="text-lg text-gray-600 animate-pulse">Loading orders...</p>
+        <Loading/>
+        {/* <p className="text-lg text-gray-600 animate-pulse">Loading orders...</p> */}
       </div>
     );
   }
