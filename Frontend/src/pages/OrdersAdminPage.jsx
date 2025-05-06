@@ -89,7 +89,9 @@ const OrdersAdminPage = () => {
   // UI while loading
   if (loading) {
     return (
-      <div className="text-center p-10 text-gray-600">Loading orders...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-lg text-gray-600 animate-pulse">Loading orders...</p>
+      </div>
     );
   }
 
