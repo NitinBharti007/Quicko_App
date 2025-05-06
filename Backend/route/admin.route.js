@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getAllOrdersForAdmin, updateOrderStatus, getAllAddressesForAdmin } from "../controllers/Admin.controller.js";
+import { getAllOrdersForAdmin, updateOrderStatus, getAllAddressesForAdmin } from "../controllers/admin.controller.js";
 import auth from "../middleware/auth.js";
 
 const adminRouter = Router();
