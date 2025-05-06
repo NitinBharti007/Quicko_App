@@ -30,7 +30,7 @@ const addressSchema = new Schema(
     },
     userId: {
       type: mongoose.Schema.ObjectId,
-      default: "",
+      ref: "User",
     },
   },
   {
