@@ -11,6 +11,7 @@ import {
   FaCheckCircle,
   FaTimesCircle,
   FaClock,
+  FaShippingFast,
 } from "react-icons/fa";
 import toast from "react-hot-toast";
 import AxiosToastError from "../utils/AxiosToastError";
@@ -47,29 +48,37 @@ const MyOrders = () => {
     fetchOrders();
   }, []);
 
-  // Function to get status icon based on payment status
+  // Function to get status icon based on order status
   const getStatusIcon = (status) => {
     switch (status?.toUpperCase()) {
-      case "PAID":
+      case "DELIVERED":
         return <FaCheckCircle className="text-green-500" />;
-      case "CASH ON DELIVERY":
-        return <FaClock className="text-yellow-500" />;
+      case "SHIPPED":
+        return <FaShippingFast className="text-blue-500" />;
+      case "PROCESSING":
+        return <FaBox className="text-yellow-500" />;
       case "PENDING":
         return <FaClock className="text-yellow-500" />;
-      default:
+      case "CANCELLED":
         return <FaTimesCircle className="text-red-500" />;
+      default:
+        return <FaClock className="text-gray-500" />;
     }
   };
 
-  // Function to get status text based on payment status
+  // Function to get status text based on order status
   const getStatusText = (status) => {
     switch (status?.toUpperCase()) {
-      case "PAID":
-        return "Paid";
-      case "CASH ON DELIVERY":
-        return "Cash on Delivery";
+      case "DELIVERED":
+        return "Delivered";
+      case "SHIPPED":
+        return "Shipped";
+      case "PROCESSING":
+        return "Processing";
       case "PENDING":
         return "Pending";
+      case "CANCELLED":
+        return "Cancelled";
       default:
         return status || "Unknown";
     }
@@ -160,11 +169,14 @@ const MyOrders = () => {
                         Placed on {formatDate(order.createdAt)}
                       </p>
                     </div>
-                    <div className="flex items-center">
-                      {getStatusIcon(order.payment_status)}
-                      <span className="ml-2 text-xs sm:text-sm font-medium">
-                        {getStatusText(order.payment_status)}
-                      </span>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center">
+                        {getStatusIcon(order.order_status)}
+                        <span className="ml-2 text-xs sm:text-sm font-medium">
+                          {getStatusText(order.order_status)}
+                        </span>
+                      </div>
+                      
                     </div>
                   </div>
                 </div>

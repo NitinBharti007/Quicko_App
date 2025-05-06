@@ -24,6 +24,8 @@ import CartMobilePage from "../pages/CartMobilePage";
 import CheckoutPage from "../pages/CheckoutPage";
 import Success from "../pages/Success";
 import Cancel from "../pages/Cancel";
+import AddressesAdminPage from "../pages/AddressesAdminPage";
+import OrdersAdminPage from "../pages/OrdersAdminPage";
 
 const router = createBrowserRouter([
   {
@@ -111,6 +113,22 @@ const router = createBrowserRouter([
             element: (
               <AdminPermission>
                 <ProductsAdminPage />
+              </AdminPermission>
+            ),
+          },
+          {
+            path: "admin-addresses",
+            element: (
+              <AdminPermission>
+                <AddressesAdminPage />
+              </AdminPermission>
+            ),
+          },
+          {
+            path: "admin-orders",
+            element: (
+              <AdminPermission>
+                <OrdersAdminPage />
               </AdminPermission>
             ),
           },

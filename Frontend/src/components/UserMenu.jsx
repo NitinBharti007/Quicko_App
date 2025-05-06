@@ -97,17 +97,17 @@ const UserMenu = ({ close }) => {
 
         <Link
           onClick={handleClose}
-          to={"/dashboard/orders"}
+          to={user.role === "ADMIN" ? "/dashboard/admin-orders" : "/dashboard/orders"}
           className="px-2 hover:bg-orange-200 py-1"
         >
-          My Orders
+          {user.role === "ADMIN" ? "Orders" : "My Orders"}
         </Link>
         <Link
           onClick={handleClose}
-          to={"/dashboard/address"}
+          to={user.role === "ADMIN" ? "/dashboard/admin-addresses" : "/dashboard/address"}
           className="px-2 hover:bg-orange-200 py-1"
         >
-          Save Address
+          {user.role === "ADMIN" ? "Addresses" : "Save Address"}
         </Link>
         <button
           onClick={handleLogOut}

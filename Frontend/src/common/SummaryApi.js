@@ -157,6 +157,18 @@ const SummaryApi = {
   getOrderBySession: {
     url: "/api/order/get-order-by-session",
     method: "get",
+  }, 
+  getAllOrdersForAdmin: {
+    url: "/api/admin/all-orders",
+    method: "get",
+  },
+  updateOrderStatus: {
+    url: "/api/admin/update-order-status",
+    method: "post",
+  },
+  getAllAddressesForAdmin: {
+    url: "/api/admin/all-addresses",
+    method: "get",
   },
 };
 
