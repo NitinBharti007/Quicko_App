@@ -60,16 +60,19 @@ const OrdersAdminPage = () => {
         // Update the local state to reflect the change
         setOrders((prevOrders) =>
           prevOrders.map((order) =>
-            order._id === orderId ? { ...order, order_status: status.toUpperCase() } : order
+            order._id === orderId
+              ? { ...order, order_status: status.toUpperCase() }
+              : order
           )
         );
       }
     } catch (error) {
       console.error("Error updating order status:", error);
-      toast.error(error.response?.data?.message || "Failed to update order status");
+      toast.error(
+        error.response?.data?.message || "Failed to update order status"
+      );
     }
   };
-  
 
   // Icon based on order status
   const getStatusIcon = (status) => {
@@ -90,9 +93,11 @@ const OrdersAdminPage = () => {
   // UI while loading
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <PageLoading/>
-        {/* <p className="text-lg text-gray-600 animate-pulse">Loading orders...</p> */}
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading all orders...</p>
+        </div>
       </div>
     );
   }
@@ -150,14 +155,21 @@ const OrdersAdminPage = () => {
               </div>
               <div>
                 <p className="text-gray-500">Payment Status</p>
-                <p className="font-medium capitalize">
-                  {order.payment_status}
-                </p>
+                <p className="font-medium capitalize">{order.payment_status}</p>
               </div>
               <div>
                 <p className="text-gray-500">Product</p>
                 <p className="font-medium truncate">
                   {order.product_details?.name || "Product Removed"}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500">Order Date & Time</p>
+                <p className="font-medium truncate">
+                  {new Date(order.createdAt).toLocaleString("en-IN", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })}
                 </p>
               </div>
               <div className="sm:col-span-2">
@@ -167,6 +179,7 @@ const OrdersAdminPage = () => {
                     "Address not available"}
                 </p>
               </div>
+              
             </div>
 
             {/* Status Update */}
@@ -178,7 +191,7 @@ const OrdersAdminPage = () => {
                 value={order.order_status}
                 disabled={updatingId === order._id}
                 onChange={(e) => handleStatusUpdate(order._id, e.target.value)}
-                className="border border-gray-300 rounded px-3 py-2 w-full sm:w-auto focus:outline-none"
+                className="border cursor-pointer border-gray-300 rounded px-3 py-2 w-full sm:w-auto focus:outline-none"
               >
                 <option value="PENDING">Pending</option>
                 <option value="PROCESSING">Processing</option>

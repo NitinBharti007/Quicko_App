@@ -101,12 +101,20 @@ const ProductsListPage = () => {
           </div>
           <div>
             <div className="min-h-[74vh] max-h-[78vh] lg:max-h-[80vh] overflow-y-auto scrollbarCustom relative">
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 p-4 gap-3">
-                {data.map((p, index) => {
-                  return <CardProduct data={p} key={index} />;
-                })}
-              </div>
-              {loading && <Loading />}
+              {loading ? (
+                <div className="min-h-screen flex justify-center items-center">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Loading...</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 p-4 gap-3">
+                  {data.map((p, index) => (
+                    <CardProduct data={p} key={index} />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
