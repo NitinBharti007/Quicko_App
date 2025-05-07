@@ -27,7 +27,7 @@ const httpServer = createServer(app);
 // Socket.IO configuration
 const io = new Server(httpServer, {
   cors: {
-    origin: ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"],
+    origin: [process.env.FRONTEND_URL],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"]
@@ -41,7 +41,7 @@ app.set('io', io);
 
 // Middleware
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"],
+  origin: process.env.FRONTEND_URL,
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"]
