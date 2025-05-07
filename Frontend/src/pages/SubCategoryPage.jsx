@@ -29,8 +29,6 @@ const SubCategoryPage = () => {
   const fetchSubCategory = async () => {
     try {
       setLoading(true);
-      console.log('Fetching subcategories...'); // Debug log
-      
       const res = await Axios({
         ...SummaryApi.getSubCategory,
         method: 'get',
@@ -40,12 +38,9 @@ const SubCategoryPage = () => {
         }
       });
       
-      console.log('Subcategories response:', res); // Debug log
-      
       const { data: resData } = res;
       if (resData.success) {
         setData(resData.data);
-        console.log('Subcategories data set:', resData.data); // Debug log
       } else {
         console.error('API returned unsuccessful response:', resData);
         toast.error(resData.message || "Failed to fetch subcategories");

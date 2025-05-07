@@ -1,10 +1,7 @@
 import axios from "axios";
 import SummaryApi from "../common/SummaryApi";
 
-// Get the backend URL from environment variable or use a default
-const baseURL = import.meta.env.VITE_BACKEND_URL || 'https://quicko-app-backend.onrender.com';
-
-console.log('Backend URL:', baseURL); // Debug log
+const baseURL = import.meta.env.VITE_BACKEND_URL;
 
 const Axios = axios.create({
   baseURL: baseURL,
@@ -18,8 +15,6 @@ const Axios = axios.create({
 // Sending access token in the header
 Axios.interceptors.request.use(
   async (config) => {
-    console.log('Making request to:', config.url); // Debug log
-    
     const accessToken = localStorage.getItem("accessToken");
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
@@ -41,7 +36,6 @@ Axios.interceptors.request.use(
 // Handle response and errors
 Axios.interceptors.response.use(
   async (response) => {
-    console.log('Response received:', response.status); // Debug log
     return response;
   },
   async (error) => {

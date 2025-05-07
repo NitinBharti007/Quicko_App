@@ -221,14 +221,6 @@ const AdminAddressPage = () => {
                     <span className="font-medium">Phone:</span> {address.mobile}
                   </p>
                 </div>
-                <div className="mt-4">
-                  <button
-                    onClick={() => handleEdit(address._id)}
-                    className="w-full sm:w-auto text-sm px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
-                  >
-                    Edit
-                  </button>
-                </div>
               </div>
             ))}
           </div>

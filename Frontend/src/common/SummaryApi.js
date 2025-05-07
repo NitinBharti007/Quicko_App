@@ -1,8 +1,4 @@
-// Get the backend URL from environment variable or use a default
-export const baseURL = import.meta.env.VITE_BACKEND_URL || 'https://quicko-app-backend.onrender.com';
-
-// Debug log for baseURL
-console.log('SummaryApi baseURL:', baseURL);
+export const baseURL = import.meta.env.VITE_BACKEND_URL;
 
 const SummaryApi = {
   register: {
