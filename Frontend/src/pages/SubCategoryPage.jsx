@@ -31,13 +31,15 @@ const SubCategoryPage = () => {
       setLoading(true);
       const res = await Axios({
         ...SummaryApi.getSubCategory,
+        method: 'get'
       });
       const { data: resData } = res;
       if (resData.success) {
         setData(resData.data);
       }
     } catch (error) {
-      AxiosToastError(error);
+      console.error('Error fetching subcategories:', error);
+      toast.error("Failed to fetch subcategories");
     } finally {
       setLoading(false);
     }

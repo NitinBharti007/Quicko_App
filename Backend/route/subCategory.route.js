@@ -10,7 +10,7 @@ import {
 const subCategoryRouter = Router();
 
 subCategoryRouter.post("/add-subCategory", auth, addSubCategoryController);
-subCategoryRouter.post("/get-subCategory", getSubCategoryController);
+subCategoryRouter.get("/get-subCategory", getSubCategoryController);
 subCategoryRouter.put("/update-subCategory", auth, updateSubCategoryController);
 subCategoryRouter.delete("/delete-subCategory", auth, deleteSubCategoryContreoller);
 
