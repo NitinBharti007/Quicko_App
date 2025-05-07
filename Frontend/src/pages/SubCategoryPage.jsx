@@ -29,17 +29,30 @@ const SubCategoryPage = () => {
   const fetchSubCategory = async () => {
     try {
       setLoading(true);
+      console.log('Fetching subcategories...'); // Debug log
+      
       const res = await Axios({
         ...SummaryApi.getSubCategory,
-        method: 'get'
+        method: 'get',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
       });
+      
+      console.log('Subcategories response:', res); // Debug log
+      
       const { data: resData } = res;
       if (resData.success) {
         setData(resData.data);
+        console.log('Subcategories data set:', resData.data); // Debug log
+      } else {
+        console.error('API returned unsuccessful response:', resData);
+        toast.error(resData.message || "Failed to fetch subcategories");
       }
     } catch (error) {
-      console.error('Error fetching subcategories:', error);
-      toast.error("Failed to fetch subcategories");
+      console.error('Error fetching subcategories:', error.response || error);
+      toast.error(error.response?.data?.message || "Failed to fetch subcategories");
     } finally {
       setLoading(false);
     }

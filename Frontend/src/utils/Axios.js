@@ -1,5 +1,10 @@
 import axios from "axios";
-import SummaryApi, { baseURL } from "../common/SummaryApi";
+import SummaryApi from "../common/SummaryApi";
+
+// Get the backend URL from environment variable or use a default
+const baseURL = import.meta.env.VITE_API_URL || 'https://quicko.vercel.app';
+
+console.log('Backend URL:', baseURL); // Debug log
 
 const Axios = axios.create({
   baseURL: baseURL,
@@ -13,6 +18,8 @@ const Axios = axios.create({
 // Sending access token in the header
 Axios.interceptors.request.use(
   async (config) => {
+    console.log('Making request to:', config.url); // Debug log
+    
     const accessToken = localStorage.getItem("accessToken");
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
@@ -26,6 +33,7 @@ Axios.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error('Request error:', error); // Debug log
     return Promise.reject(error);
   }
 );
@@ -33,9 +41,12 @@ Axios.interceptors.request.use(
 // Handle response and errors
 Axios.interceptors.response.use(
   async (response) => {
+    console.log('Response received:', response.status); // Debug log
     return response;
   },
   async (error) => {
+    console.error('Response error:', error.response?.status, error.response?.data); // Debug log
+    
     const originalRequest = error.config;
     
     // Handle 401 Unauthorized
