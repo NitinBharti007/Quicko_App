@@ -1,6 +1,9 @@
 import express from "express";
 import cors from "cors";
+import { createServer } from "http";
+import { Server } from "socket.io";
 import dotenv from "dotenv";
+import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import helmet from "helmet";
@@ -19,13 +22,32 @@ import adminRouter from "./route/admin.route.js";
 dotenv.config();
 
 const app = express();
-app.use(
-  cors({
+const httpServer = createServer(app);
+
+// Socket.IO configuration
+const io = new Server(httpServer, {
+  cors: {
+    origin: ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
-    origin: process.env.FRONTEND_URL,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  })
-);
+    allowedHeaders: ["Content-Type", "Authorization"]
+  },
+  pingTimeout: 60000,
+  pingInterval: 25000
+});
+
+// Make io accessible to our routes
+app.set('io', io);
+
+// Middleware
+app.use(cors({
+  origin: ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("combined"));
 app.use(
@@ -33,19 +55,40 @@ app.use(
     crossOriginResourcePolicy: false,
   })
 );
-// Stripe webhook route needs raw body
-app.post("/api/order/webhook", express.raw({type: 'application/json'}), webhookController);
 
-// Parse JSON for all other routes
-app.use(express.json());
-const PORT = process.env.PORT || 8080;
+// Socket.IO connection handling
+io.on('connection', (socket) => {
+  console.log('A user connected:', socket.id);
 
-app.get("/", (req, res) => {
-  res.json({
-    message: "Welcome to the API",
+  // Join admin room if user is admin
+  socket.on('joinAdminRoom', () => {
+    socket.join('admin');
+    console.log('User joined admin room:', socket.id);
+    // Acknowledge the join
+    socket.emit('roomJoined', { room: 'admin' });
+  });
+
+  // Join user room
+  socket.on('joinUserRoom', (userId) => {
+    if (userId) {
+      socket.join(`user_${userId}`);
+      console.log(`User ${userId} joined their room:`, socket.id);
+      // Acknowledge the join
+      socket.emit('roomJoined', { room: `user_${userId}` });
+    }
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+  });
+
+  // Error handling
+  socket.on('error', (error) => {
+    console.error('Socket error:', error);
   });
 });
 
+// Routes
 app.use("/api/user", userRouter);
 app.use("/api/category", categoryRouter);
 app.use("/api/file", uploadRouter);
@@ -53,11 +96,21 @@ app.use("/api/subCategory", subCategoryRouter);
 app.use("/api/product", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/address", addressRouter);
-app.use("/api/order", orderRouter); 
+app.use("/api/order", orderRouter);
 app.use("/api/admin", adminRouter);
 
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
+// Stripe webhook route needs raw body
+app.post("/api/order/webhook", express.raw({type: 'application/json'}), webhookController);
+
+// Parse JSON for all other routes
+app.use(express.json());
+
+// MongoDB connection
+connectDB();
+
+// Start server
+const PORT = process.env.PORT || 8080;
+httpServer.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+  console.log(`Socket.IO server is running`);
 });

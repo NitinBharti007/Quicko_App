@@ -15,6 +15,7 @@ import {
 } from "react-icons/fa";
 import toast from "react-hot-toast";
 import AxiosToastError from "../utils/AxiosToastError";
+import { useSocket } from "../context/SocketContext";
 
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -22,6 +23,7 @@ const MyOrders = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const user = useSelector((state) => state.user);
+  const { socket, isConnected } = useSocket();
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -47,6 +49,45 @@ const MyOrders = () => {
 
     fetchOrders();
   }, []);
+
+  // Socket.IO event listeners
+  useEffect(() => {
+    if (!socket || !isConnected || !user?._id) return;
+
+    // Join user room
+    socket.emit('joinUserRoom', user._id);
+
+    // Listen for new orders
+    socket.on('newOrder', (data) => {
+      if (data.userId === user._id) {
+        setOrders(prevOrders => [...data.orders, ...prevOrders]);
+        toast.success(data.message || 'New orders placed successfully!');
+      }
+    });
+
+    // Listen for order status updates
+    socket.on('orderStatusUpdate', (data) => {
+      setOrders(prevOrders =>
+        prevOrders.map(order =>
+          order._id === data.orderId
+            ? { 
+                ...order, 
+                order_status: data.status,
+                payment_status: data.payment_status || order.payment_status
+              }
+            : order
+        )
+      );
+      toast.success(data.message || 'Order status updated!');
+    });
+
+    return () => {
+      if (socket) {
+        socket.off('newOrder');
+        socket.off('orderStatusUpdate');
+      }
+    };
+  }, [socket, isConnected, user?._id]);
 
   // Function to get status icon based on order status
   const getStatusIcon = (status) => {

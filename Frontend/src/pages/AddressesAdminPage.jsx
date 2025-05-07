@@ -3,7 +3,6 @@ import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import AxiosToastError from "../utils/AxiosToastError";
 import { useNavigate } from "react-router-dom";
-import PageLoading from "../components/PageLoading";
 
 const AdminAddressPage = () => {
   const [addresses, setAddresses] = useState([]);

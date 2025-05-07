@@ -44,6 +44,15 @@ export async function CashOnDelivery(req, res) {
 
     await CartModel.deleteMany({ userId });
 
+    // Get the io instance from the app
+    const io = req.app.get('io');
+    
+    // Emit the new order event to all connected clients
+    io.emit('newOrder', {
+      orders: generatedOrder,
+      userId: userId
+    });
+
     return res.json({
       message: "Order successful",
       error: false,
@@ -206,10 +215,10 @@ export async function webhookController(req, res) {
         return res.status(400).json({ error: 'No order items were created' });
       }
       
-      const order = await OrderModel.insertMany(orderProduct);
+      const orders = await OrderModel.insertMany(orderProduct);
       
-      if (order[0]) {
-        const orderIds = order.map(order => order._id);
+      if (orders.length > 0) {
+        const orderIds = orders.map(order => order._id);
         await UserModel.findByIdAndUpdate(
           userId,
           { 
@@ -218,11 +227,47 @@ export async function webhookController(req, res) {
           }
         );
         await CartModel.deleteMany({ userId });
+
+        // Get io instance
+        const io = req.app.get('io');
+
+        // Emit new order event to admin
+        io.to('admin').emit('newOrder', {
+          orders: orders,
+          message: 'New orders received'
+        });
+
+        // Emit new order event to user
+        io.to(`user_${userId}`).emit('newOrder', {
+          orders: orders,
+          userId: userId,
+          message: 'Your orders have been placed successfully'
+        });
+
+        // Emit status updates for each order
+        orders.forEach(order => {
+          // Emit to admin room
+          io.to('admin').emit('orderStatusUpdate', {
+            orderId: order._id,
+            status: 'PROCESSING',
+            payment_status: 'PAID',
+            message: 'Payment completed and order processing'
+          });
+
+          // Emit to user's room
+          io.to(`user_${userId}`).emit('orderStatusUpdate', {
+            orderId: order._id,
+            status: 'PROCESSING',
+            payment_status: 'PAID',
+            message: 'Payment completed and order processing'
+          });
+        });
       }
     }
     
     res.json({ received: true });
   } catch (error) {
+    console.error('Webhook Processing Error:', error);
     res.status(500).json({ error: 'Error processing webhook' });
   }
 }
@@ -318,6 +363,41 @@ export async function getOrderBySessionController(req, res) {
         );
         
         await CartModel.deleteMany({ userId });
+
+        // Get io instance
+        const io = req.app.get('io');
+
+        // Emit new order event to admin
+        io.to('admin').emit('newOrder', {
+          orders: newOrders,
+          message: 'New orders received'
+        });
+
+        // Emit new order event to user
+        io.to(`user_${userId}`).emit('newOrder', {
+          orders: newOrders,
+          userId: userId,
+          message: 'Your orders have been placed successfully'
+        });
+
+        // Emit status updates for each order
+        newOrders.forEach(order => {
+          // Emit to admin room
+          io.to('admin').emit('orderStatusUpdate', {
+            orderId: order._id,
+            status: 'PROCESSING',
+            payment_status: 'PAID',
+            message: 'Payment completed and order processing'
+          });
+
+          // Emit to user's room
+          io.to(`user_${userId}`).emit('orderStatusUpdate', {
+            orderId: order._id,
+            status: 'PROCESSING',
+            payment_status: 'PAID',
+            message: 'Payment completed and order processing'
+          });
+        });
         
         orders = await OrderModel.find({
           _id: { $in: orderIds }
@@ -347,6 +427,7 @@ export async function getOrderBySessionController(req, res) {
       error: false,
     });
   } catch (error) {
+    console.error('Get Order By Session Error:', error);
     return res.status(500).json({
       message: error.message || "Failed to fetch order details",
       success: false,

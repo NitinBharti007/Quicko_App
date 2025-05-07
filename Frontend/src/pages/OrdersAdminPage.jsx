@@ -11,7 +11,8 @@ import {
 } from "react-icons/fa";
 import toast from "react-hot-toast";
 import AxiosToastError from "../utils/AxiosToastError";
-import PageLoading from "../components/PageLoading";
+import { useSocket } from "../context/SocketContext";
+import { useSelector } from "react-redux";
 
 const OrdersAdminPage = () => {
   const [orders, setOrders] = useState([]);
@@ -19,6 +20,8 @@ const OrdersAdminPage = () => {
   const [error, setError] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
   const navigate = useNavigate();
+  const { socket, isConnected } = useSocket();
+  const user = useSelector((state) => state.user);
 
   // Function to fetch orders
   const fetchOrders = async () => {
@@ -44,9 +47,47 @@ const OrdersAdminPage = () => {
     fetchOrders();
   }, []);
 
+  // Socket.IO event listeners
+  useEffect(() => {
+    if (!socket || !isConnected || user?.role !== 'ADMIN') return;
+
+    // Join admin room
+    socket.emit('joinAdminRoom');
+
+    // Listen for new orders
+    socket.on('newOrder', (data) => {
+      setOrders(prevOrders => [...data.orders, ...prevOrders]);
+      toast.success(data.message || 'New orders received!');
+    });
+
+    // Listen for order status updates
+    socket.on('orderStatusUpdate', (data) => {
+      setOrders(prevOrders =>
+        prevOrders.map(order =>
+          order._id === data.orderId
+            ? { 
+                ...order, 
+                order_status: data.status,
+                payment_status: data.payment_status || order.payment_status
+              }
+            : order
+        )
+      );
+      toast.success(data.message || 'Order status updated!');
+    });
+
+    return () => {
+      if (socket) {
+        socket.off('newOrder');
+        socket.off('orderStatusUpdate');
+      }
+    };
+  }, [socket, isConnected, user?.role]);
+
   // Handle order status update
   const handleStatusUpdate = async (orderId, status) => {
     try {
+      setUpdatingId(orderId);
       const response = await Axios({
         ...SummaryApi.updateOrderStatus,
         data: {
@@ -55,22 +96,17 @@ const OrdersAdminPage = () => {
         },
       });
 
-      if (response.data.success) {
-        toast.success("Order status updated successfully");
-        // Update the local state to reflect the change
-        setOrders((prevOrders) =>
-          prevOrders.map((order) =>
-            order._id === orderId
-              ? { ...order, order_status: status.toUpperCase() }
-              : order
-          )
-        );
-      }
+      // if (response.data.success) {
+      //   // The socket event will handle the UI update
+      //   toast.success("Order status updated successfully");
+      // }
     } catch (error) {
       console.error("Error updating order status:", error);
       toast.error(
         error.response?.data?.message || "Failed to update order status"
       );
+    } finally {
+      setUpdatingId(null);
     }
   };
 

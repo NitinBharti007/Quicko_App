@@ -9,7 +9,6 @@ import { useDispatch } from "react-redux";
 import { setUserDetails } from "./store/userSlice";
 import Axios from "./utils/Axios";
 import SummaryApi from "./common/SummaryApi";
-
 import {
   setAllCategory,
   setAllSubCategory,
@@ -19,6 +18,7 @@ import AxiosToastError from "./utils/AxiosToastError";
 import GlobalProvider from "./provider/GlobalProvider";
 import CartMobile from "./components/CartMobile";
 import ScrollToTop from "./components/ScrollToTop";
+import { SocketProvider } from "./context/SocketContext";
 
 function App() {
   const dispatch = useDispatch();
@@ -54,6 +54,7 @@ function App() {
   }, [dispatch]);
 
   return (
+    <SocketProvider>
       <GlobalProvider>
         <ScrollToTop />
         <Header />
@@ -64,6 +65,7 @@ function App() {
         <Footer />
         {location.pathname !== "/checkout" && <CartMobile />}
       </GlobalProvider>
+    </SocketProvider>
   );
 }
 
