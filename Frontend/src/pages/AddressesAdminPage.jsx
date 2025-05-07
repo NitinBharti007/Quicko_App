@@ -70,7 +70,7 @@ const AdminAddressPage = () => {
         </div>
 
         {addresses.length === 0 ? (
-          <p className="text-gray-600 text-lg">No addresses found.</p>
+          <p className="text-gray-600 text-center text-lg">No addresses found.</p>
         ) : (
           <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {addresses.map((address) => (
@@ -83,6 +83,7 @@ const AdminAddressPage = () => {
                     {address?.userId?.name || "User"}{" "}
                     <span className="text-sm text-gray-600">({address?.userId?.email || "N/A"})</span>
                   </h2>
+                  {/* <h2>{address?.userId}</h2> */}
                 </div>
                 <div className="space-y-2 text-sm text-gray-700">
                   <p>
