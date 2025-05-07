@@ -2,7 +2,7 @@ import axios from "axios";
 import SummaryApi from "../common/SummaryApi";
 
 // Get the backend URL from environment variable or use a default
-const baseURL = import.meta.env.VITE_API_URL || 'https://quicko.vercel.app';
+const baseURL = import.meta.env.VITE_BACKEND_URL || 'https://quicko-app-backend.onrender.com';
 
 console.log('Backend URL:', baseURL); // Debug log
 
