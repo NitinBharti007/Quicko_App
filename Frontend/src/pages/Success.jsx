@@ -27,6 +27,10 @@ const Success = () => {
         await Axios(SummaryApi.clearCart);
         dispatch(addToCart([]));
         // await fetchCartItems();
+        setTimeout(() => {
+          fetchCartItems();
+        }, 500);
+        
         setCartCleared(true);
         return true;
       } catch (error) {
