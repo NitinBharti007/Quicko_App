@@ -63,8 +63,8 @@ const Cancel = () => {
             <div className="mt-8 text-center">
               <p className="text-sm text-gray-600">
                 Need help? Contact our support team at{" "}
-                <a href="mailto:support@quicko.com" className="text-red-600 hover:underline">
-                  support@quicko.com
+                <a href="mailto:support@quicko.vercel.app" className="text-red-600 hover:underline">
+                  support@quicko.vercel.app
                 </a>
               </p>
             </div>

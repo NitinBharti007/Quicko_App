@@ -64,7 +64,7 @@ const TrackOrder = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-yellow-500 mx-auto"></div>
           <p className="mt-3 sm:mt-4 text-sm sm:text-base text-gray-600">Loading tracking information...</p>
         </div>
       </div>

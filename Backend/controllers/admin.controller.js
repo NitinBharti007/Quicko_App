@@ -6,7 +6,7 @@ export async function getAllOrdersForAdmin(req, res) {
   try {
     const orders = await OrderModel.find()
       .populate("productId")
-      .populate("userId")
+      .populate("userId", "name email")
       .populate("delivery_address")
       .sort({ createdAt: -1 });
 

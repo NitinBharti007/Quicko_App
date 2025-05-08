@@ -21,20 +21,36 @@ const Success = () => {
   const sessionId = searchParams.get("session_id");
   const toastShown = useRef(false);
 
+  // const clearCart = async () => {
+  //   if (cart?.length > 0 && !cartCleared) {
+  //     try {
+  //       await Axios(SummaryApi.clearCart);
+  //       dispatch(addToCart([]));
+  //       // await fetchCartItems();
+  //       setCartCleared(true);
+  //       return true;
+  //     } catch (error) {
+  //       console.error("Error clearing cart:", error);
+  //       return false;
+  //     }
+  //   }
+  //   return true;
+  // };
+
   const clearCart = async () => {
-    if (cart?.length > 0 && !cartCleared) {
-      try {
-        await Axios(SummaryApi.clearCart);
-        dispatch(addToCart([]));
-        await fetchCartItems();
-        setCartCleared(true);
-        return true;
-      } catch (error) {
-        console.error("Error clearing cart:", error);
-        return false;
+    try {
+      for (const item of cartItems) {
+        await Axios({
+          ...SummaryApi.removeCartItem,
+          data: { _id: item._id },
+        });
       }
+      dispatch(addToCart([])); // Clear Redux cart
+      return true;
+    } catch (error) {
+      AxiosToastError(error);
+      return false;
     }
-    return true;
   };
 
   useEffect(() => {
@@ -99,7 +115,7 @@ const Success = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Processing your order...</p>
         </div>
       </div>
