@@ -107,7 +107,6 @@ app.use(express.json());
 
 // MongoDB connection
 connectDB();
-
 // Start server
 const PORT = process.env.PORT || 8080;
 httpServer.listen(PORT, () => {
