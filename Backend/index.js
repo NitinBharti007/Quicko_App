@@ -30,22 +30,24 @@ const io = new Server(httpServer, {
     origin: [process.env.FRONTEND_URL],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: ["Content-Type", "Authorization"],
   },
   pingTimeout: 60000,
-  pingInterval: 25000
+  pingInterval: 25000,
 });
 
 // Make io accessible to our routes
-app.set('io', io);
+app.set("io", io);
 
 // Middleware
-app.use(cors({
-  origin: process.env.FRONTEND_URL,
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(express.json());
 app.use(cookieParser());
@@ -56,35 +58,41 @@ app.use(
   })
 );
 
+app.get("/", (req, res) => {
+  res.json({
+    message: "Backend is running!",
+  });
+});
+
 // Socket.IO connection handling
-io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
+io.on("connection", (socket) => {
+  console.log("A user connected:", socket.id);
 
   // Join admin room if user is admin
-  socket.on('joinAdminRoom', () => {
-    socket.join('admin');
-    console.log('User joined admin room:', socket.id);
+  socket.on("joinAdminRoom", () => {
+    socket.join("admin");
+    console.log("User joined admin room:", socket.id);
     // Acknowledge the join
-    socket.emit('roomJoined', { room: 'admin' });
+    socket.emit("roomJoined", { room: "admin" });
   });
 
   // Join user room
-  socket.on('joinUserRoom', (userId) => {
+  socket.on("joinUserRoom", (userId) => {
     if (userId) {
       socket.join(`user_${userId}`);
       console.log(`User ${userId} joined their room:`, socket.id);
       // Acknowledge the join
-      socket.emit('roomJoined', { room: `user_${userId}` });
+      socket.emit("roomJoined", { room: `user_${userId}` });
     }
   });
 
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
   });
 
   // Error handling
-  socket.on('error', (error) => {
-    console.error('Socket error:', error);
+  socket.on("error", (error) => {
+    console.error("Socket error:", error);
   });
 });
 
@@ -100,7 +108,11 @@ app.use("/api/order", orderRouter);
 app.use("/api/admin", adminRouter);
 
 // Stripe webhook route needs raw body
-app.post("/api/order/webhook", express.raw({type: 'application/json'}), webhookController);
+app.post(
+  "/api/order/webhook",
+  express.raw({ type: "application/json" }),
+  webhookController
+);
 
 // Parse JSON for all other routes
 app.use(express.json());
