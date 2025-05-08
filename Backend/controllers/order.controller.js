@@ -183,6 +183,117 @@ const getOrderProductItems = async ({
 };
 
 // Handle Stripe webhooks
+// export async function webhookController(req, res) {
+//   const sig = req.headers["stripe-signature"];
+//   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+//   if (!endpointSecret) {
+//     return res.status(500).json({ error: "Webhook secret is not configured" });
+//   }
+
+//   let event;
+//   try {
+//     event = Stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+//   } catch (err) {
+//     return res.status(400).send(`Webhook Error: ${err.message}`);
+//   }
+
+//   try {
+//     if (event.type === "checkout.session.completed") {
+//       const session = event.data.object;
+//       const { userId, addressId } = session.metadata;
+
+//       if (!userId || !addressId) {
+//         return res.status(400).json({ error: "Missing required metadata" });
+//       }
+
+//       // Get user information
+//       const user = await UserModel.findById(userId);
+//       if (!user) {
+//         return res.status(404).json({ error: "User not found" });
+//       }
+
+//       const lineItems = await Stripe.checkout.sessions.listLineItems(
+//         session.id
+//       );
+//       const orderProduct = await getOrderProductItems({
+//         lineItems,
+//         userId,
+//         addressId,
+//         paymentId: session.payment_intent,
+//         payment_status: "PAID",
+//       });
+
+//       if (orderProduct.length === 0) {
+//         return res.status(400).json({ error: "No order items were created" });
+//       }
+
+//       // Set initial order status to PROCESSING for online payments
+//       const ordersWithStatus = orderProduct.map((order) => ({
+//         ...order,
+//         order_status: "PROCESSING",
+//       }));
+
+//       const orders = await OrderModel.insertMany(ordersWithStatus);
+      
+//       if (orders.length > 0) {
+//         const orderIds = orders.map((order) => order._id);
+//         await UserModel.findByIdAndUpdate(userId, {
+//           $push: { orderHistory: { $each: orderIds } },
+//           shopping_cart: [],
+//         });
+//         await CartModel.deleteMany({ userId });
+
+//         // Get io instance
+//         const io = req.app.get("io");
+
+//         // Emit new order event to admin with user information
+//         io.to("admin").emit("newOrder", {
+//           orders: orders.map((order) => ({
+//             ...order.toObject(),
+//             user: {
+//               name: user.name,
+//               email: user.email,
+//             },
+//           })),
+//           message: "New orders received",
+//         });
+
+//         // Emit new order event to user
+//         io.to(`user_${userId}`).emit("newOrder", {
+//           orders: orders,
+//           userId: userId,
+//           message: "Your orders have been placed successfully",
+//         });
+
+//         // Emit status updates for each order
+//         orders.forEach((order) => {
+//           // Emit to admin room
+//           io.to("admin").emit("orderStatusUpdate", {
+//             orderId: order._id,
+//             status: "PROCESSING",
+//             payment_status: "PAID",
+//             message: "Payment completed and order processing",
+//           });
+
+//           // Emit to user's room
+//           io.to(`user_${userId}`).emit("orderStatusUpdate", {
+//             orderId: order._id,
+//             status: "PROCESSING",
+//             payment_status: "PAID",
+//             message: "Payment completed and order processing",
+//           });
+//         });
+//       }
+//     }
+
+//     res.json({ received: true });
+//   } catch (error) {
+//     console.error("Webhook Processing Error:", error);
+//     res.status(500).json({ error: "Error processing webhook" });
+//   }
+// }
+
 export async function webhookController(req, res) {
   const sig = req.headers["stripe-signature"];
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -207,15 +318,12 @@ export async function webhookController(req, res) {
         return res.status(400).json({ error: "Missing required metadata" });
       }
 
-      // Get user information
       const user = await UserModel.findById(userId);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
 
-      const lineItems = await Stripe.checkout.sessions.listLineItems(
-        session.id
-      );
+      const lineItems = await Stripe.checkout.sessions.listLineItems(session.id);
       const orderProduct = await getOrderProductItems({
         lineItems,
         userId,
@@ -228,85 +336,61 @@ export async function webhookController(req, res) {
         return res.status(400).json({ error: "No order items were created" });
       }
 
-      // Set initial order status to PROCESSING for online payments
       const ordersWithStatus = orderProduct.map((order) => ({
         ...order,
         order_status: "PROCESSING",
       }));
 
-      const orders = await OrderModel.insertMany(ordersWithStatus);
+      // Insert orders
+      const insertedOrders = await OrderModel.insertMany(ordersWithStatus);
 
-      const populatedOrders = await OrderModel.find({  //Added for new User Order
-        _id: { $in: orders.map((o) => o._id) },
+      // Populate inserted orders with user, address, and product info
+      const populatedOrders = await OrderModel.find({
+        _id: { $in: insertedOrders.map((o) => o._id) },
       })
         .populate("userId", "name email")
         .populate("delivery_address")
         .populate("productId");
 
-      if (orders.length > 0) {
-        const orderIds = orders.map((order) => order._id);
-        await UserModel.findByIdAndUpdate(userId, {
-          $push: { orderHistory: { $each: orderIds } },
-          shopping_cart: [],
+      // Update user order history and clear cart
+      const orderIds = insertedOrders.map((o) => o._id);
+      await UserModel.findByIdAndUpdate(userId, {
+        $push: { orderHistory: { $each: orderIds } },
+        shopping_cart: [],
+      });
+      await CartModel.deleteMany({ userId });
+
+      const io = req.app.get("io");
+
+      // Emit newOrder to admin
+      io.to("admin").emit("newOrder", {
+        orders: populatedOrders,
+        message: "New orders received",
+      });
+
+      // Emit to user
+      io.to(`user_${userId}`).emit("newOrder", {
+        orders: populatedOrders,
+        userId,
+        message: "Your orders have been placed successfully",
+      });
+
+      // Emit orderStatusUpdate for each order
+      populatedOrders.forEach((order) => {
+        io.to("admin").emit("orderStatusUpdate", {
+          orderId: order._id,
+          status: order.order_status,
+          payment_status: order.payment_status,
+          order,
         });
-        await CartModel.deleteMany({ userId });
 
-        // Get io instance
-        const io = req.app.get("io");
-
-        // Emit new order event to admin with user information
-        io.to("admin").emit("newOrder", {
-          orders: orders.map((order) => ({
-            ...order.toObject(),
-            user: {
-              name: user.name,
-              email: user.email,
-            },
-          })),
-          message: "New orders received",
+        io.to(`user_${userId}`).emit("orderStatusUpdate", {
+          orderId: order._id,
+          status: order.order_status,
+          payment_status: order.payment_status,
+          order,
         });
-
-        // Emit new order event to user
-        io.to(`user_${userId}`).emit("newOrder", {
-          orders: populatedOrders, //orders
-          userId: userId,
-          message: "Your orders have been placed successfully",
-        });
-
-        // Emit status updates for each order
-        // orders.forEach((order) => {
-        //   // Emit to admin room
-        //   io.to("admin").emit("orderStatusUpdate", {
-        //     orderId: order._id,
-        //     status: "PROCESSING",
-        //     payment_status: "PAID",
-        //     message: "Payment completed and order processing",
-        //   });
-
-        //   // Emit to user's room
-        //   io.to(`user_${userId}`).emit("orderStatusUpdate", {
-        //     orderId: order._id,
-        //     status: "PROCESSING",
-        //     payment_status: "PAID",
-        //     message: "Payment completed and order processing",
-        //   });
-        // });
-        populatedOrders.forEach(order => {
-          io.to('admin').emit('orderStatusUpdate', {
-            orderId: order._id,
-            status: 'PROCESSING',
-            payment_status: 'PAID',
-            order, // include full order object with populated data
-          });
-        
-          io.to(`user_${userId}`).emit('orderStatusUpdate', {
-            orderId: order._id,
-            status: 'PROCESSING',
-            payment_status: 'PAID',
-            order,
-          });
-        });
-      }
+      });
     }
 
     res.json({ received: true });
@@ -315,6 +399,7 @@ export async function webhookController(req, res) {
     res.status(500).json({ error: "Error processing webhook" });
   }
 }
+
 
 // Get order details for a user
 export async function getOrderDetailsController(req, res) {

@@ -265,8 +265,8 @@ const OrdersAdminPage = () => {
                   Order #{order.orderId}
                 </h2>
                 <p className="text-sm text-gray-600 break-words">
-                  {order.userId?.name || "Unknown User"} -{" "}
-                  {order.userId?.email || "N/A"}
+                  {order?.userId?.name || "Unknown User"} -{" "}
+                  {order?.userId?.email || "N/A"}
                 </p>
               </div>
               <div className="flex items-center gap-2 text-sm font-medium">
@@ -309,7 +309,7 @@ const OrdersAdminPage = () => {
               <div className="sm:col-span-2">
                 <p className="text-gray-500">Delivery Address</p>
                 <p className="font-medium break-words">
-                  {order.delivery_address?.address_line ||
+                  {order?.delivery_address?.address_line ||
                     "Address not available"}
                 </p>
               </div>
