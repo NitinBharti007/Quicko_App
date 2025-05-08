@@ -42,7 +42,7 @@ export async function updateOrderStatus(req, res) {
       orderId,
       { order_status: status },
       { new: true }
-    ).populate("userId").populate("delivery_address");
+    ).populate("userId", "name,email").populate("delivery_address"); // Added Name and email.
 
     if (!updatedOrder) {
       return res.status(404).json({

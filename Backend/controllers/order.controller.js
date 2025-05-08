@@ -4,7 +4,6 @@ import CartModel from "../models/cart.model.js";
 import mongoose from "mongoose";
 import Stripe from "../config/stripe.js";
 
-
 export const PriceWithDiscount = (price, discount = 1) => {
   const discountAmount = Math.ceil((Number(price) * Number(discount)) / 100);
   return Number(price) - discountAmount;
@@ -32,25 +31,22 @@ export async function CashOnDelivery(req, res) {
     }));
 
     const generatedOrder = await OrderModel.insertMany(payload);
-    const orderIds = generatedOrder.map(order => order._id);
+    const orderIds = generatedOrder.map((order) => order._id);
 
-    await UserModel.findByIdAndUpdate(
-      userId,
-      { 
-        $push: { orderHistory: { $each: orderIds } },
-        shopping_cart: [] 
-      }
-    );
+    await UserModel.findByIdAndUpdate(userId, {
+      $push: { orderHistory: { $each: orderIds } },
+      shopping_cart: [],
+    });
 
     await CartModel.deleteMany({ userId });
 
     // Get the io instance from the app
-    const io = req.app.get('io');
-    
+    const io = req.app.get("io");
+
     // Emit the new order event to all connected clients
-    io.emit('newOrder', {
+    io.emit("newOrder", {
       orders: generatedOrder,
-      userId: userId
+      userId: userId,
     });
 
     return res.json({
@@ -73,7 +69,7 @@ export async function paymentController(req, res) {
   try {
     const userId = req.userId;
     const { list_items, totalAmt, addressId, subTotalAmt } = req.body;
-    
+
     if (!process.env.STRIPE_SECRET_KEY || !process.env.FRONTEND_URL) {
       return res.status(500).json({
         message: "Payment service is not properly configured",
@@ -104,18 +100,21 @@ export async function paymentController(req, res) {
         currency: "inr",
         product_data: {
           name: items.productId.name,
-          images: items.productId.image.filter(url => url && url.trim() !== ''),
+          images: items.productId.image.filter(
+            (url) => url && url.trim() !== ""
+          ),
           metadata: { productId: items.productId._id },
         },
         unit_amount: Math.round(
-          PriceWithDiscount(items.productId.price, items.productId.discount) * 100
+          PriceWithDiscount(items.productId.price, items.productId.discount) *
+            100
         ),
       },
       quantity: items.quantity,
     }));
 
-    const frontendUrl = process.env.FRONTEND_URL.endsWith('/') 
-      ? process.env.FRONTEND_URL.slice(0, -1) 
+    const frontendUrl = process.env.FRONTEND_URL.endsWith("/")
+      ? process.env.FRONTEND_URL.slice(0, -1)
       : process.env.FRONTEND_URL;
 
     const session = await Stripe.checkout.sessions.create({
@@ -143,7 +142,13 @@ export async function paymentController(req, res) {
 }
 
 // Helper function to create order items from Stripe line items
-const getOrderProductItems = async ({ lineItems, userId, addressId, paymentId, payment_status }) => {
+const getOrderProductItems = async ({
+  lineItems,
+  userId,
+  addressId,
+  paymentId,
+  payment_status,
+}) => {
   if (!lineItems?.data?.length) return [];
 
   try {
@@ -158,10 +163,10 @@ const getOrderProductItems = async ({ lineItems, userId, addressId, paymentId, p
           productId: product.metadata.productId,
           product_details: {
             name: product.name,
-            image: product.images?.[0] || '',
+            image: product.images?.[0] || "",
           },
-          paymentId: paymentId || '',
-          payment_status: payment_status || 'PAID',
+          paymentId: paymentId || "",
+          payment_status: payment_status || "PAID",
           delivery_address: addressId,
           subTotalAmt: Number(item.amount_total / 100),
           totalAmt: Number(item.amount_total / 100),
@@ -179,36 +184,38 @@ const getOrderProductItems = async ({ lineItems, userId, addressId, paymentId, p
 
 // Handle Stripe webhooks
 export async function webhookController(req, res) {
-  const sig = req.headers['stripe-signature'];
+  const sig = req.headers["stripe-signature"];
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  
+
   if (!endpointSecret) {
-    return res.status(500).json({ error: 'Webhook secret is not configured' });
+    return res.status(500).json({ error: "Webhook secret is not configured" });
   }
-  
+
   let event;
   try {
     event = Stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
   } catch (err) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
-  
+
   try {
-    if (event.type === 'checkout.session.completed') {
+    if (event.type === "checkout.session.completed") {
       const session = event.data.object;
       const { userId, addressId } = session.metadata;
-      
+
       if (!userId || !addressId) {
-        return res.status(400).json({ error: 'Missing required metadata' });
+        return res.status(400).json({ error: "Missing required metadata" });
       }
 
       // Get user information
       const user = await UserModel.findById(userId);
       if (!user) {
-        return res.status(404).json({ error: 'User not found' });
+        return res.status(404).json({ error: "User not found" });
       }
-      
-      const lineItems = await Stripe.checkout.sessions.listLineItems(session.id);
+
+      const lineItems = await Stripe.checkout.sessions.listLineItems(
+        session.id
+      );
       const orderProduct = await getOrderProductItems({
         lineItems,
         userId,
@@ -216,77 +223,96 @@ export async function webhookController(req, res) {
         paymentId: session.payment_intent,
         payment_status: "PAID",
       });
-      
+
       if (orderProduct.length === 0) {
-        return res.status(400).json({ error: 'No order items were created' });
+        return res.status(400).json({ error: "No order items were created" });
       }
 
       // Set initial order status to PROCESSING for online payments
-      const ordersWithStatus = orderProduct.map(order => ({
+      const ordersWithStatus = orderProduct.map((order) => ({
         ...order,
-        order_status: 'PROCESSING'
+        order_status: "PROCESSING",
       }));
-      
+
       const orders = await OrderModel.insertMany(ordersWithStatus);
-      
+
+      const populatedOrders = await OrderModel.find({  //Added for new User Order
+        _id: { $in: orders.map((o) => o._id) },
+      })
+        .populate("userId", "name email")
+        .populate("delivery_address")
+        .populate("productId");
+
       if (orders.length > 0) {
-        const orderIds = orders.map(order => order._id);
-        await UserModel.findByIdAndUpdate(
-          userId,
-          { 
-            $push: { orderHistory: { $each: orderIds } },
-            shopping_cart: [] 
-          }
-        );
+        const orderIds = orders.map((order) => order._id);
+        await UserModel.findByIdAndUpdate(userId, {
+          $push: { orderHistory: { $each: orderIds } },
+          shopping_cart: [],
+        });
         await CartModel.deleteMany({ userId });
 
         // Get io instance
-        const io = req.app.get('io');
+        const io = req.app.get("io");
 
         // Emit new order event to admin with user information
-        io.to('admin').emit('newOrder', {
-          orders: orders.map(order => ({
+        io.to("admin").emit("newOrder", {
+          orders: orders.map((order) => ({
             ...order.toObject(),
             user: {
               name: user.name,
-              email: user.email
-            }
+              email: user.email,
+            },
           })),
-          message: 'New orders received'
+          message: "New orders received",
         });
 
         // Emit new order event to user
-        io.to(`user_${userId}`).emit('newOrder', {
-          orders: orders,
+        io.to(`user_${userId}`).emit("newOrder", {
+          orders: populatedOrders, //orders
           userId: userId,
-          message: 'Your orders have been placed successfully'
+          message: "Your orders have been placed successfully",
         });
 
         // Emit status updates for each order
-        orders.forEach(order => {
-          // Emit to admin room
+        // orders.forEach((order) => {
+        //   // Emit to admin room
+        //   io.to("admin").emit("orderStatusUpdate", {
+        //     orderId: order._id,
+        //     status: "PROCESSING",
+        //     payment_status: "PAID",
+        //     message: "Payment completed and order processing",
+        //   });
+
+        //   // Emit to user's room
+        //   io.to(`user_${userId}`).emit("orderStatusUpdate", {
+        //     orderId: order._id,
+        //     status: "PROCESSING",
+        //     payment_status: "PAID",
+        //     message: "Payment completed and order processing",
+        //   });
+        // });
+        populatedOrders.forEach(order => {
           io.to('admin').emit('orderStatusUpdate', {
             orderId: order._id,
             status: 'PROCESSING',
             payment_status: 'PAID',
-            message: 'Payment completed and order processing'
+            order, // include full order object with populated data
           });
-
-          // Emit to user's room
+        
           io.to(`user_${userId}`).emit('orderStatusUpdate', {
             orderId: order._id,
             status: 'PROCESSING',
             payment_status: 'PAID',
-            message: 'Payment completed and order processing'
+            order,
           });
         });
       }
     }
-    
+
     res.json({ received: true });
   } catch (error) {
-    console.error('Webhook Processing Error:', error);
-    res.status(500).json({ error: 'Error processing webhook' });
+    console.error("Webhook Processing Error:", error);
+    res.status(500).json({ error: "Error processing webhook" });
   }
 }
 
@@ -295,7 +321,7 @@ export async function getOrderDetailsController(req, res) {
   try {
     const userId = req.userId;
     const user = await UserModel.findById(userId);
-    
+
     if (!user) {
       return res.status(404).json({
         message: "User not found",
@@ -306,8 +332,8 @@ export async function getOrderDetailsController(req, res) {
 
     const orderlist = await OrderModel.find({ userId })
       .sort({ createdAt: -1 })
-      .populate('delivery_address')
-      .populate('productId');
+      .populate("delivery_address")
+      .populate("productId");
 
     return res.json({
       message: "Order list",
@@ -328,7 +354,7 @@ export async function getOrderDetailsController(req, res) {
 export async function getOrderBySessionController(req, res) {
   try {
     const { sessionId } = req.query;
-    
+
     if (!sessionId) {
       return res.status(400).json({
         message: "Session ID is required",
@@ -338,7 +364,7 @@ export async function getOrderBySessionController(req, res) {
     }
 
     const session = await Stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['line_items'],
+      expand: ["line_items"],
     });
 
     if (!session || !session.metadata.userId) {
@@ -352,14 +378,16 @@ export async function getOrderBySessionController(req, res) {
     const { userId } = session.metadata;
     let orders = await OrderModel.find({
       userId,
-      createdAt: { $gte: new Date(session.created * 1000) }
+      createdAt: { $gte: new Date(session.created * 1000) },
     })
-    .sort({ createdAt: -1 })
-    .populate('delivery_address')
-    .populate('productId');
+      .sort({ createdAt: -1 })
+      .populate("delivery_address")
+      .populate("productId");
 
-    if (!orders.length && session.payment_status === 'paid') {
-      const lineItems = await Stripe.checkout.sessions.listLineItems(session.id);
+    if (!orders.length && session.payment_status === "paid") {
+      const lineItems = await Stripe.checkout.sessions.listLineItems(
+        session.id
+      );
       const orderProduct = await getOrderProductItems({
         lineItems,
         userId,
@@ -367,74 +395,72 @@ export async function getOrderBySessionController(req, res) {
         paymentId: session.payment_intent,
         payment_status: "PAID",
       });
-      
+
       if (orderProduct.length > 0) {
         const newOrders = await OrderModel.insertMany(orderProduct);
-        const orderIds = newOrders.map(order => order._id);
-        
-        await UserModel.findByIdAndUpdate(
-          userId,
-          { 
-            $push: { orderHistory: { $each: orderIds } },
-            shopping_cart: [] 
-          }
-        );
-        
+        const orderIds = newOrders.map((order) => order._id);
+
+        await UserModel.findByIdAndUpdate(userId, {
+          $push: { orderHistory: { $each: orderIds } },
+          shopping_cart: [],
+        });
+
         await CartModel.deleteMany({ userId });
 
         // Get io instance
-        const io = req.app.get('io');
+        const io = req.app.get("io");
 
         // Emit new order event to admin
-        io.to('admin').emit('newOrder', {
+        io.to("admin").emit("newOrder", {
           orders: newOrders,
-          message: 'New orders received'
+          message: "New orders received",
         });
 
         // Emit new order event to user
-        io.to(`user_${userId}`).emit('newOrder', {
+        io.to(`user_${userId}`).emit("newOrder", {
           orders: newOrders,
           userId: userId,
-          message: 'Your orders have been placed successfully'
+          message: "Your orders have been placed successfully",
         });
 
         // Emit status updates for each order
-        newOrders.forEach(order => {
+        newOrders.forEach((order) => {
           // Emit to admin room
-          io.to('admin').emit('orderStatusUpdate', {
+          io.to("admin").emit("orderStatusUpdate", {
             orderId: order._id,
-            status: 'PROCESSING',
-            payment_status: 'PAID',
-            message: 'Payment completed and order processing'
+            status: "PROCESSING",
+            payment_status: "PAID",
+            message: "Payment completed and order processing",
           });
 
           // Emit to user's room
-          io.to(`user_${userId}`).emit('orderStatusUpdate', {
+          io.to(`user_${userId}`).emit("orderStatusUpdate", {
             orderId: order._id,
-            status: 'PROCESSING',
-            payment_status: 'PAID',
-            message: 'Payment completed and order processing'
+            status: "PROCESSING",
+            payment_status: "PAID",
+            message: "Payment completed and order processing",
           });
         });
-        
+
         orders = await OrderModel.find({
-          _id: { $in: orderIds }
+          _id: { $in: orderIds },
         })
-        .sort({ createdAt: -1 })
-        .populate('delivery_address')
-        .populate('productId');
+          .sort({ createdAt: -1 })
+          .populate("delivery_address")
+          .populate("productId");
       }
     }
 
     if (!orders.length) {
       return res.json({
-        message: session.payment_status === 'paid' 
-          ? "Payment successful, order processing"
-          : "Orders not found",
+        message:
+          session.payment_status === "paid"
+            ? "Payment successful, order processing"
+            : "Orders not found",
         data: [],
         success: true,
         error: false,
-        processing: session.payment_status === 'paid'
+        processing: session.payment_status === "paid",
       });
     }
 
@@ -445,7 +471,7 @@ export async function getOrderBySessionController(req, res) {
       error: false,
     });
   } catch (error) {
-    console.error('Get Order By Session Error:', error);
+    console.error("Get Order By Session Error:", error);
     return res.status(500).json({
       message: error.message || "Failed to fetch order details",
       success: false,
