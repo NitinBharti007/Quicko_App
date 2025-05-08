@@ -201,6 +201,12 @@ export async function webhookController(req, res) {
       if (!userId || !addressId) {
         return res.status(400).json({ error: 'Missing required metadata' });
       }
+
+      // Get user information
+      const user = await UserModel.findById(userId);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
       
       const lineItems = await Stripe.checkout.sessions.listLineItems(session.id);
       const orderProduct = await getOrderProductItems({
@@ -214,8 +220,14 @@ export async function webhookController(req, res) {
       if (orderProduct.length === 0) {
         return res.status(400).json({ error: 'No order items were created' });
       }
+
+      // Set initial order status to PROCESSING for online payments
+      const ordersWithStatus = orderProduct.map(order => ({
+        ...order,
+        order_status: 'PROCESSING'
+      }));
       
-      const orders = await OrderModel.insertMany(orderProduct);
+      const orders = await OrderModel.insertMany(ordersWithStatus);
       
       if (orders.length > 0) {
         const orderIds = orders.map(order => order._id);
@@ -231,9 +243,15 @@ export async function webhookController(req, res) {
         // Get io instance
         const io = req.app.get('io');
 
-        // Emit new order event to admin
+        // Emit new order event to admin with user information
         io.to('admin').emit('newOrder', {
-          orders: orders,
+          orders: orders.map(order => ({
+            ...order.toObject(),
+            user: {
+              name: user.name,
+              email: user.email
+            }
+          })),
           message: 'New orders received'
         });
 

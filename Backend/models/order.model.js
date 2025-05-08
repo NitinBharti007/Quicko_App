@@ -30,7 +30,10 @@ const orderSchema = new mongoose.Schema(
     order_status: {
       type: String,
       enum: ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'],
-      default: 'PENDING'
+      default: function() {
+        // Set default status based on payment method
+        return this.payment_status === 'PAID' ? 'PROCESSING' : 'PENDING';
+      }
     },
     delivery_address: {
       type: mongoose.Schema.ObjectId,

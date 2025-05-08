@@ -30,6 +30,7 @@ const Success = () => {
         setCartCleared(true);
         return true;
       } catch (error) {
+        console.error("Error clearing cart:", error);
         return false;
       }
     }
@@ -41,8 +42,12 @@ const Success = () => {
       if (orderProcessed) return;
 
       try {
+        // Clear cart first
         const cartClearedSuccessfully = await clearCart();
-        if (!cartClearedSuccessfully) return;
+        if (!cartClearedSuccessfully) {
+          console.error("Failed to clear cart");
+          return;
+        }
 
         if (sessionId) {
           try {
@@ -73,12 +78,14 @@ const Success = () => {
               setOrderProcessed(true);
             }
           } catch (error) {
+            console.error("Error fetching order:", error);
             setOrderProcessed(true);
           }
         } else {
           setOrderProcessed(true);
         }
       } catch (error) {
+        console.error("Error in clearCartAndFetchOrder:", error);
         setOrderProcessed(true);
       } finally {
         setLoading(false);
